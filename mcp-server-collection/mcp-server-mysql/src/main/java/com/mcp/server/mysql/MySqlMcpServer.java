@@ -13,15 +13,49 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * MySQL MCP Server 实现
+ * MySQL MCP Server 实现。
+ * <p>
+ * 本类通过 MCP（Model Context Protocol）协议将 MySQL 数据库操作暴露为可调用的工具，
+ * 使 AI 模型能够直接与 MySQL 数据库进行交互。
+ * </p>
+ * <p>
+ * 提供以下 MCP 工具：
+ * <ul>
+ *   <li><b>query</b> - 执行 SELECT 查询并返回结果集</li>
+ *   <li><b>execute</b> - 执行 INSERT/UPDATE/DELETE 等写操作</li>
+ *   <li><b>list_databases</b> - 列出所有数据库</li>
+ *   <li><b>list_tables</b> - 列出指定数据库中的所有表</li>
+ *   <li><b>describe_table</b> - 查看表结构</li>
+ *   <li><b>explain_query</b> - 获取 SQL 查询的执行计划</li>
+ *   <li><b>get_table_status</b> - 获取表的状态信息</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 安全特性：内置危险 SQL 检测机制，自动拦截 DROP、DELETE、TRUNCATE、ALTER、
+ * CREATE、GRANT、REVOKE 等可能造成数据损失的操作。
+ * </p>
  */
 @McpServer(name = "mysql-server", version = "1.0.0")
 public class MySqlMcpServer {
 
     private static final Logger log = LoggerFactory.getLogger(MySqlMcpServer.class);
 
+    /** HikariCP 数据库连接池，管理与 MySQL 的连接 */
     private final HikariDataSource dataSource;
 
+    /**
+     * 构造方法，初始化 MySQL 连接池。
+     * <p>
+     * 使用 HikariCP 连接池，配置最大连接数为 10，最小空闲连接数为 2，
+     * 空闲超时 30 秒，连接超时 10 秒。
+     * </p>
+     *
+     * @param host     MySQL 服务器地址
+     * @param port     MySQL 服务器端口
+     * @param database 目标数据库名称
+     * @param username 数据库用户名
+     * @param password 数据库密码
+     */
     public MySqlMcpServer(String host, int port, String database, String username, String password) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(String.format("jdbc:mysql://%s:%d/%s?useSSL=false&allowPublicKeyRetrieval=true",
@@ -37,6 +71,17 @@ public class MySqlMcpServer {
         log.info("MySQL connection pool initialized for {}:{}", host, port);
     }
 
+    /**
+     * 执行 SQL 查询语句并返回结果集。
+     * <p>
+     * 仅允许执行 SELECT 等只读查询。执行前会进行危险 SQL 检测，
+     * 拒绝任何以 DROP、DELETE、TRUNCATE 等关键字开头的语句。
+     * </p>
+     *
+     * @param sql 要执行的 SQL 查询语句
+     * @return 查询结果，以 JSON 数组格式返回，每个元素为一行数据（列名 -> 值的映射）；
+     *         若 SQL 被判定为危险操作则返回错误信息
+     */
     @McpTool(name = "query", description = "Execute a SQL query and return results")
     public ToolCallResult query(
             @Param(name = "sql", description = "SQL query to execute") String sql
@@ -70,6 +115,15 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 执行 SQL 写操作语句（INSERT、UPDATE、DELETE 等）。
+     * <p>
+     * 执行前会进行危险 SQL 检测，拒绝可能造成数据结构变更或数据大量损失的操作。
+     * </p>
+     *
+     * @param sql 要执行的 SQL 语句
+     * @return 执行结果，包含受影响的行数；若 SQL 被判定为危险操作则返回错误信息
+     */
     @McpTool(name = "execute", description = "Execute a SQL statement (INSERT, UPDATE, DELETE)")
     public ToolCallResult execute(
             @Param(name = "sql", description = "SQL statement to execute") String sql
@@ -91,6 +145,12 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 列出 MySQL 服务器中的所有数据库。
+     * <p>等效于执行 {@code SHOW DATABASES} 语句。</p>
+     *
+     * @return 数据库名称列表，以 JSON 数组格式返回
+     */
     @McpTool(name = "list_databases", description = "List all databases")
     public ToolCallResult listDatabases() {
         try (Connection conn = dataSource.getConnection();
@@ -108,6 +168,16 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 列出指定数据库中的所有表。
+     * <p>
+     * 若未指定数据库名称，则列出当前连接数据库中的表。
+     * 等效于执行 {@code SHOW TABLES} 或 {@code SHOW TABLES FROM database}。
+     * </p>
+     *
+     * @param database 数据库名称，可选；为空时使用当前连接的数据库
+     * @return 表名列表，以 JSON 数组格式返回
+     */
     @McpTool(name = "list_tables", description = "List all tables in a database")
     public ToolCallResult listTables(
             @Param(name = "database", description = "Database name", required = false) String database
@@ -132,6 +202,17 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 查看指定表的结构信息。
+     * <p>
+     * 等效于执行 {@code DESCRIBE table} 语句，返回字段名称、类型、是否可为 NULL、
+     * 键类型、默认值等表结构详情。
+     * </p>
+     *
+     * @param table    表名
+     * @param database 数据库名称，可选；不为空时会拼接为 {@code database.table} 格式
+     * @return 表结构信息，以 JSON 数组格式返回，每个元素描述一列的属性
+     */
     @McpTool(name = "describe_table", description = "Describe table structure")
     public ToolCallResult describeTable(
             @Param(name = "table", description = "Table name") String table,
@@ -162,6 +243,16 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 获取 SQL 查询的执行计划。
+     * <p>
+     * 等效于执行 {@code EXPLAIN sql} 语句，用于分析查询性能、查看索引使用情况、
+     * 表扫描方式等优化相关信息。
+     * </p>
+     *
+     * @param sql 要分析的 SQL 查询语句
+     * @return 执行计划详情，以 JSON 数组格式返回
+     */
     @McpTool(name = "explain_query", description = "Get execution plan for a SQL query")
     public ToolCallResult explainQuery(
             @Param(name = "sql", description = "SQL query to explain") String sql
@@ -189,6 +280,16 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 获取表的状态信息。
+     * <p>
+     * 等效于执行 {@code SHOW TABLE STATUS} 语句，返回表的引擎类型、行数估计、
+     * 数据长度、索引长度、自增列值等运行时状态信息。
+     * </p>
+     *
+     * @param database 数据库名称，可选；为空时使用当前连接的数据库
+     * @return 表状态信息，以 JSON 数组格式返回
+     */
     @McpTool(name = "get_table_status", description = "Get table status information")
     public ToolCallResult getTableStatus(
             @Param(name = "database", description = "Database name", required = false) String database
@@ -221,6 +322,16 @@ public class MySqlMcpServer {
         }
     }
 
+    /**
+     * 检测 SQL 语句是否为危险操作。
+     * <p>
+     * 判定规则：SQL 语句（去除前后空格并转为大写后）以以下关键字之一开头即视为危险：
+     * DROP、DELETE、TRUNCATE、ALTER、CREATE、GRANT、REVOKE。
+     * </p>
+     *
+     * @param sql 待检测的 SQL 语句
+     * @return {@code true} 表示危险操作，{@code false} 表示安全
+     */
     private boolean isDangerousSql(String sql) {
         String upper = sql.toUpperCase().trim();
         return upper.startsWith("DROP") ||
@@ -232,6 +343,10 @@ public class MySqlMcpServer {
                 upper.startsWith("REVOKE");
     }
 
+    /**
+     * 关闭数据库连接池，释放所有数据库连接资源。
+     * <p>应在 MCP Server 停止时调用，通常通过 JVM 关闭钩子触发。</p>
+     */
     public void close() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();

@@ -11,48 +11,107 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * MCP Server 默认实现
+ * MCP 服务器默认实现
+ * <p>
+ * 基于 JSON-RPC 2.0 协议的 MCP 服务器完整实现，提供工具（Tools）、
+ * 资源（Resources）和 Prompt 模板三大能力的注册、管理和请求处理。
+ * </p>
+ * <p>
+ * 核心职责：
+ * <ul>
+ *   <li>管理已注册的工具、资源和 Prompt 处理器</li>
+ *   <li>解析客户端 JSON-RPC 请求并路由到对应的处理器</li>
+ *   <li>构造并发送 JSON-RPC 响应（成功或错误）</li>
+ *   <li>处理传输层的错误和关闭事件</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 支持通过 Builder 模式创建实例：
+ * <pre>
+ * DefaultMcpServer server = DefaultMcpServer.builder()
+ *         .name("my-server").version("1.0.0").build();
+ * </pre>
+ * </p>
+ *
+ * @see McpServer
  */
 public class DefaultMcpServer implements McpServer {
 
+    /** 日志记录器 */
     private static final Logger log = LoggerFactory.getLogger(DefaultMcpServer.class);
+
+    /** MCP 协议版本号，遵循 "YYYY-MM-DD" 格式 */
     private static final String PROTOCOL_VERSION = "2024-11-05";
 
+    /** 服务器名称，用于标识和初始化握手时返回给客户端 */
     private final String name;
+
+    /** 服务器版本号，用于标识和初始化握手时返回给客户端 */
     private final String version;
+
+    /** JSON 序列化/反序列化器，用于处理 JSON-RPC 消息中的参数转换 */
     private final ObjectMapper objectMapper;
 
+    /** 已注册的工具映射表，key 为工具名称，value 为工具条目（包含名称、描述和处理器） */
     private final Map<String, ToolEntry> tools = new ConcurrentHashMap<>();
+
+    /** 已注册的资源映射表，key 为资源 URI，value 为资源条目（包含 URI、名称、描述和提供者） */
     private final Map<String, ResourceEntry> resources = new ConcurrentHashMap<>();
+
+    /** 已注册的 Prompt 模板映射表，key 为 Prompt 名称，value 为 Prompt 条目（包含名称、描述和处理器） */
     private final Map<String, PromptEntry> prompts = new ConcurrentHashMap<>();
 
+    /** 传输层实例，负责底层通信（如 Stdio、SSE、WebSocket 等） */
     private Transport transport;
+
+    /** 请求 ID 计数器，用于生成唯一的 JSON-RPC 请求标识 */
     private long requestIdCounter = 0;
 
+    /**
+     * 创建 DefaultMcpServer 实例
+     *
+     * @param name    服务器名称
+     * @param version 服务器版本号
+     */
     public DefaultMcpServer(String name, String version) {
         this.name = name;
         this.version = version;
         this.objectMapper = new ObjectMapper();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public McpServer tool(String name, String description, ToolHandler handler) {
         tools.put(name, new ToolEntry(name, description, handler));
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public McpServer resource(String uri, String name, String description, ResourceProvider provider) {
         resources.put(uri, new ResourceEntry(uri, name, description, provider));
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public McpServer prompt(String name, String description, PromptHandler handler) {
         prompts.put(name, new PromptEntry(name, description, handler));
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 注册消息处理、错误处理和连接关闭的回调，然后启动传输层。
+     * </p>
+     */
     @Override
     public void start(Transport transport) throws Exception {
         this.transport = transport;
@@ -65,6 +124,9 @@ public class DefaultMcpServer implements McpServer {
         log.info("MCP Server '{}' started", name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() throws Exception {
         if (transport != null) {
@@ -73,6 +135,9 @@ public class DefaultMcpServer implements McpServer {
         log.info("MCP Server '{}' stopped", name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Tool> listTools() {
         return tools.values().stream()
@@ -83,6 +148,9 @@ public class DefaultMcpServer implements McpServer {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Resource> listResources() {
         return resources.values().stream()
@@ -94,6 +162,9 @@ public class DefaultMcpServer implements McpServer {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Prompt> listPrompts() {
         return prompts.values().stream()
@@ -104,6 +175,9 @@ public class DefaultMcpServer implements McpServer {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ToolCallResult callTool(String name, Map<String, Object> arguments) {
         ToolEntry entry = tools.get(name);
@@ -113,6 +187,9 @@ public class DefaultMcpServer implements McpServer {
         return entry.handler.execute(arguments);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceContent readResource(String uri) {
         ResourceEntry entry = resources.get(uri);
@@ -122,6 +199,9 @@ public class DefaultMcpServer implements McpServer {
         return entry.provider.read(uri);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PromptResult getPrompt(String name, Map<String, String> arguments) {
         PromptEntry entry = prompts.get(name);
@@ -131,6 +211,15 @@ public class DefaultMcpServer implements McpServer {
         return entry.handler.execute(arguments);
     }
 
+    /**
+     * 处理从传输层接收到的 JSON-RPC 消息
+     * <p>
+     * 根据消息类型（请求或通知）分发到对应的处理方法。
+     * 处理过程中发生的异常会被捕获并转换为错误响应发送给客户端。
+     * </p>
+     *
+     * @param message 接收到的 JSON-RPC 消息
+     */
     private void handleMessage(JsonRpcMessage message) {
         try {
             if (message.isRequest()) {
@@ -144,6 +233,17 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理 JSON-RPC 请求消息
+     * <p>
+     * 根据请求方法名路由到对应的处理逻辑，包括：
+     * initialize、tools/list、tools/call、resources/list、resources/read、
+     * prompts/list、prompts/get、ping 等。
+     * 未知方法将返回 -32601 错误码。
+     * </p>
+     *
+     * @param request JSON-RPC 请求消息
+     */
     private void handleRequest(JsonRpcMessage request) {
         String method = request.getMethod();
         Object id = request.getId();
@@ -164,6 +264,15 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理 JSON-RPC 通知消息（无需响应）
+     * <p>
+     * 处理客户端发送的通知，如 {@code initialized}（初始化完成通知）
+     * 和 {@code notifications/cancelled}（请求取消通知）。
+     * </p>
+     *
+     * @param notification JSON-RPC 通知消息
+     */
     private void handleNotification(JsonRpcMessage notification) {
         String method = notification.getMethod();
         log.debug("Handling notification: {}", method);
@@ -175,6 +284,15 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理初始化请求（{@code initialize}）
+     * <p>
+     * 构造初始化响应，包含协议版本、服务器能力和服务器信息。
+     * </p>
+     *
+     * @param id     请求 ID，用于匹配响应
+     * @param params 请求参数（当前未使用，预留扩展）
+     */
     private void handleInitialize(Object id, Object params) {
         InitializeResult result = InitializeResult.builder()
                 .protocolVersion(PROTOCOL_VERSION)
@@ -199,10 +317,25 @@ public class DefaultMcpServer implements McpServer {
         sendResponse(id, result);
     }
 
+    /**
+     * 处理工具列表请求（{@code tools/list}）
+     *
+     * @param id 请求 ID
+     */
     private void handleToolsList(Object id) {
         sendResponse(id, Map.of("tools", listTools()));
     }
 
+    /**
+     * 处理工具调用请求（{@code tools/call}）
+     * <p>
+     * 解析请求参数，查找并执行对应的工具处理器。
+     * 工具不存在时返回 MCP 错误码，执行异常时返回 -32603 内部错误。
+     * </p>
+     *
+     * @param id     请求 ID
+     * @param params 请求参数，包含工具名称和参数
+     */
     private void handleToolsCall(Object id, Object params) {
         try {
             ToolCallRequest request = objectMapper.convertValue(params, ToolCallRequest.class);
@@ -215,10 +348,25 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理资源列表请求（{@code resources/list}）
+     *
+     * @param id 请求 ID
+     */
     private void handleResourcesList(Object id) {
         sendResponse(id, Map.of("resources", listResources()));
     }
 
+    /**
+     * 处理资源读取请求（{@code resources/read}）
+     * <p>
+     * 解析请求参数中的 URI，查找并调用对应的资源提供者。
+     * 资源不存在时返回 MCP 错误码，读取异常时返回 -32603 内部错误。
+     * </p>
+     *
+     * @param id     请求 ID
+     * @param params 请求参数，包含资源 URI
+     */
     private void handleResourcesRead(Object id, Object params) {
         try {
             Map<String, Object> paramMap = (Map<String, Object>) params;
@@ -232,10 +380,25 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理 Prompt 列表请求（{@code prompts/list}）
+     *
+     * @param id 请求 ID
+     */
     private void handlePromptsList(Object id) {
         sendResponse(id, Map.of("prompts", listPrompts()));
     }
 
+    /**
+     * 处理 Prompt 获取请求（{@code prompts/get}）
+     * <p>
+     * 解析请求参数中的名称和模板参数，查找并执行对应的 Prompt 处理器。
+     * Prompt 不存在时返回 MCP 错误码，执行异常时返回 -32603 内部错误。
+     * </p>
+     *
+     * @param id     请求 ID
+     * @param params 请求参数，包含 Prompt 名称和模板参数
+     */
     private void handlePromptsGet(Object id, Object params) {
         try {
             Map<String, Object> paramMap = (Map<String, Object>) params;
@@ -250,10 +413,24 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 处理 Ping 请求（{@code ping}）
+     * <p>
+     * 返回空对象作为响应，用于检测服务器是否存活。
+     * </p>
+     *
+     * @param id 请求 ID
+     */
     private void handlePing(Object id) {
         sendResponse(id, Map.of());
     }
 
+    /**
+     * 发送成功的 JSON-RPC 响应
+     *
+     * @param id     请求 ID，用于客户端匹配响应
+     * @param result 响应结果数据
+     */
     private void sendResponse(Object id, Object result) {
         try {
             JsonRpcMessage response = JsonRpcMessage.successResponse(id, result);
@@ -263,6 +440,13 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 发送错误的 JSON-RPC 响应
+     *
+     * @param id      请求 ID
+     * @param code    错误码（遵循 JSON-RPC 规范，如 -32601 方法未找到、-32603 内部错误）
+     * @param message 错误描述信息
+     */
     private void sendErrorResponse(Object id, int code, String message) {
         try {
             JsonRpcMessage response = JsonRpcMessage.errorResponse(id, code, message);
@@ -272,42 +456,85 @@ public class DefaultMcpServer implements McpServer {
         }
     }
 
+    /**
+     * 传输层错误回调
+     *
+     * @param error 错误信息
+     */
     private void handleError(Throwable error) {
         log.error("Transport error", error);
     }
 
+    /**
+     * 传输层关闭回调
+     */
     private void handleClose() {
         log.info("Transport closed");
     }
 
+    /**
+     * 工具条目，封装工具的元数据和处理器
+     */
     private record ToolEntry(String name, String description, ToolHandler handler) {}
+
+    /**
+     * 资源条目，封装资源的元数据和提供者
+     */
     private record ResourceEntry(String uri, String name, String description, ResourceProvider provider) {}
+
+    /**
+     * Prompt 条目，封装 Prompt 的元数据和处理器
+     */
     private record PromptEntry(String name, String description, PromptHandler handler) {}
 
     /**
-     * 创建 Builder
+     * 创建 DefaultMcpServer 的 Builder 实例
+     *
+     * @return 新的 Builder 实例
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Builder 类
+     * DefaultMcpServer 构建器
+     * <p>
+     * 支持链式调用设置服务器名称和版本号，最终通过 {@link #build()} 创建实例。
+     * </p>
      */
     public static class Builder {
+        /** 服务器名称，默认为 "mcp-server" */
         private String name = "mcp-server";
+        /** 服务器版本号，默认为 "1.0.0" */
         private String version = "1.0.0";
 
+        /**
+         * 设置服务器名称
+         *
+         * @param name 服务器名称
+         * @return 当前 Builder 实例
+         */
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * 设置服务器版本号
+         *
+         * @param version 版本号
+         * @return 当前 Builder 实例
+         */
         public Builder version(String version) {
             this.version = version;
             return this;
         }
 
+        /**
+         * 构建 DefaultMcpServer 实例
+         *
+         * @return 配置好的 DefaultMcpServer 实例
+         */
         public DefaultMcpServer build() {
             return new DefaultMcpServer(name, version);
         }

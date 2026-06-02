@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 实现信息（客户端/服务端标识）
+ * MCP 实现标识信息。
+ * <p>
+ * 用于描述客户端或服务端的实现信息，包含名称和版本号。
+ * 在初始化握手阶段，客户端和服务端通过此对象互相告知自身的实现详情。
+ * </p>
  */
 @Data
 @Builder
@@ -15,9 +19,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Implementation {
 
+    /** 实现名称（如 "my-mcp-client"、"my-mcp-server"） */
     @JsonProperty("name")
     private String name;
 
+    /** 实现版本号（如 "1.0.0"） */
     @JsonProperty("version")
     private String version;
 }

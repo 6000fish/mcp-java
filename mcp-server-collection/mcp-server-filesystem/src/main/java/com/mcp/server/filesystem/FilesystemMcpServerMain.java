@@ -10,12 +10,33 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Filesystem MCP Server 启动类
+ * Filesystem MCP Server 启动类。
+ * <p>
+ * 作为独立进程启动文件系统 MCP Server，通过标准输入/输出（STDIO）传输方式
+ * 与 MCP 客户端进行通信。
+ * </p>
+ * <p>
+ * 启动时从环境变量读取配置：
+ * <ul>
+ *   <li>{@code FILESYSTEM_ROOT} - 根目录路径，默认当前目录（{@code "."}）</li>
+ *   <li>{@code FILESYSTEM_ALLOWED_DIRS} - 额外允许访问的目录，多个目录以逗号分隔，默认为空</li>
+ * </ul>
+ * </p>
  */
 public class FilesystemMcpServerMain {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemMcpServerMain.class);
 
+    /**
+     * 程序入口。
+     * <p>
+     * 解析环境变量配置、初始化文件系统服务器、创建 MCP Server 实例、
+     * 注册所有文件系统工具并启动 STDIO 传输层。
+     * </p>
+     *
+     * @param args 命令行参数（未使用）
+     * @throws Exception 启动过程中可能抛出的异常
+     */
     public static void main(String[] args) throws Exception {
         // 从环境变量读取配置
         String rootDir = getEnvOrDefault("FILESYSTEM_ROOT", ".");
@@ -81,6 +102,13 @@ public class FilesystemMcpServerMain {
         Thread.currentThread().join();
     }
 
+    /**
+     * 从环境变量中获取配置值，若不存在则返回默认值。
+     *
+     * @param name         环境变量名称
+     * @param defaultValue 默认值
+     * @return 环境变量的值，若未设置则返回 {@code defaultValue}
+     */
     private static String getEnvOrDefault(String name, String defaultValue) {
         String value = System.getenv(name);
         return value != null ? value : defaultValue;
