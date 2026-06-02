@@ -19,6 +19,10 @@
         <module>mcp-server-mysql</module>
         <module>mcp-server-redis</module>
         <module>mcp-server-filesystem</module>
+        <module>mcp-server-postgresql</module>
+        <module>mcp-server-git</module>
+        <module>mcp-server-elasticsearch</module>
+        <module>mcp-server-docker</module>
     </modules>
 
 </project>
