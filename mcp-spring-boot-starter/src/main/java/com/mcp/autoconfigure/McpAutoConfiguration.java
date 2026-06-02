@@ -4,6 +4,7 @@ import com.mcp.annotation.McpTool;
 import com.mcp.protocol.ToolCallResult;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
+import com.mcp.transport.SseTransport;
 import com.mcp.transport.StdioTransport;
 import com.mcp.transport.Transport;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -91,10 +94,29 @@ public class McpAutoConfiguration {
         return switch (properties.getTransport()) {
             case STDIO -> new StdioTransport();
             case SSE -> {
-                // TODO: 实现 SSE 传输
-                log.warn("SSE transport not yet implemented, falling back to STDIO");
-                yield new StdioTransport();
+                log.info("Creating SSE transport on port {}, path {}",
+                        properties.getSsePort(), properties.getSsePath());
+                yield new SseTransport(properties.getSsePort(), properties.getSsePath(), "/messages");
             }
+        };
+    }
+
+    /**
+     * 启动 MCP Server，将 Server 和 Transport 连接起来。
+     * <p>
+     * 在 Spring 容器初始化完成后，自动调用 {@link McpServer#start(Transport)} 启动服务。
+     * 对于 STDIO 模式，开始监听 stdin；对于 SSE 模式，启动 HTTP 服务器。
+     * </p>
+     *
+     * @param server    MCP 服务端实例
+     * @param transport 传输层实例
+     * @return 应用启动器
+     */
+    @Bean
+    public ApplicationRunner mcpServerRunner(McpServer server, Transport transport) {
+        return args -> {
+            log.info("Starting MCP Server with {} transport...", transport.getClass().getSimpleName());
+            server.start(transport);
         };
     }
 

@@ -1,7 +1,12 @@
+# MCP 配置
 mcp:
   name: spring-boot-example
   version: 1.0.0
-  transport: stdio
+  # 传输协议: STDIO（本地CLI） 或 SSE（远程HTTP）
+  transport: STDIO
+  # SSE 配置（transport=SSE 时生效）
+  sse-port: 8080
+  sse-path: /sse
 
 spring:
   application:
