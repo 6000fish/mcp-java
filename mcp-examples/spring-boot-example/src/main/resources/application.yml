@@ -1,0 +1,8 @@
+mcp:
+  name: spring-boot-example
+  version: 1.0.0
+  transport: stdio
+
+spring:
+  application:
+    name: mcp-spring-boot-example
