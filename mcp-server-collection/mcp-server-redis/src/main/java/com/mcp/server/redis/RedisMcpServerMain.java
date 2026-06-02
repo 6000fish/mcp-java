@@ -5,6 +5,7 @@ import com.mcp.server.McpServer;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * Redis MCP Server 启动类。
@@ -53,48 +54,8 @@ public class RedisMcpServerMain {
                 .version("1.0.0")
                 .build();
 
-        // 注册工具
-        server.tool("get", "Get the value of a key", params ->
-                redisServer.get((String) params.get("key")));
-        server.tool("set", "Set the value of a key", params ->
-                redisServer.set(
-                        (String) params.get("key"),
-                        (String) params.get("value"),
-                        params.get("ttl") != null ? Long.parseLong(String.valueOf(params.get("ttl"))) : null));
-        server.tool("del", "Delete one or more keys", params ->
-                redisServer.del((String) params.get("keys")));
-        server.tool("keys", "Find all keys matching a pattern", params ->
-                redisServer.keys((String) params.get("pattern")));
-        server.tool("type", "Determine the type stored at a key", params ->
-                redisServer.type((String) params.get("key")));
-        server.tool("ttl", "Get the time to live for a key", params ->
-                redisServer.ttl((String) params.get("key")));
-        server.tool("hget", "Get the value of a hash field", params ->
-                redisServer.hget(
-                        (String) params.get("key"),
-                        (String) params.get("field")));
-        server.tool("hset", "Set the value of a hash field", params ->
-                redisServer.hset(
-                        (String) params.get("key"),
-                        (String) params.get("field"),
-                        (String) params.get("value")));
-        server.tool("hgetall", "Get all fields and values in a hash", params ->
-                redisServer.hgetall((String) params.get("key")));
-        server.tool("lrange", "Get a range of elements from a list", params ->
-                redisServer.lrange(
-                        (String) params.get("key"),
-                        Long.parseLong(String.valueOf(params.get("start"))),
-                        Long.parseLong(String.valueOf(params.get("stop")))));
-        server.tool("llen", "Get the length of a list", params ->
-                redisServer.llen((String) params.get("key")));
-        server.tool("scard", "Get the number of members in a set", params ->
-                redisServer.scard((String) params.get("key")));
-        server.tool("smembers", "Get all members in a set", params ->
-                redisServer.smembers((String) params.get("key")));
-        server.tool("info", "Get server information", params ->
-                redisServer.info((String) params.get("section")));
-        server.tool("dbsize", "Get the number of keys", params ->
-                redisServer.dbsize());
+        // 通过注解自动注册工具
+        McpAnnotationScanner.scan(server, redisServer);
 
         // 启动服务
         server.start(new StdioTransport());

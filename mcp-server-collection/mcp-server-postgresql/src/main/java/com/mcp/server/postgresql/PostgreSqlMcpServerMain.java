@@ -5,6 +5,7 @@ import com.mcp.server.McpServer;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * PostgreSQL MCP Server 启动类
@@ -42,23 +43,8 @@ public class PostgreSqlMcpServerMain {
                 .version("1.0.0")
                 .build();
 
-        // 注册工具
-        server.tool("query", "Execute a SQL query", params ->
-                pgServer.query((String) params.get("sql")));
-        server.tool("execute", "Execute a SQL statement", params ->
-                pgServer.execute((String) params.get("sql")));
-        server.tool("list_databases", "List all databases", params ->
-                pgServer.listDatabases());
-        server.tool("list_tables", "List all tables", params ->
-                pgServer.listTables((String) params.get("schema")));
-        server.tool("describe_table", "Describe table structure", params ->
-                pgServer.describeTable(
-                        (String) params.get("table"),
-                        (String) params.get("schema")));
-        server.tool("explain_query", "Get execution plan", params ->
-                pgServer.explainQuery((String) params.get("sql")));
-        server.tool("get_table_stats", "Get table statistics", params ->
-                pgServer.getTableStats((String) params.get("schema")));
+        // 通过注解自动注册工具
+        McpAnnotationScanner.scan(server, pgServer);
 
         // 启动服务
         server.start(new StdioTransport());

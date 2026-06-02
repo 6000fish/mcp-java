@@ -1,7 +1,6 @@
 package com.mcp.autoconfigure;
 
-import com.mcp.annotation.McpTool;
-import com.mcp.protocol.ToolCallResult;
+import com.mcp.annotation.McpAnnotationScanner;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
 import com.mcp.transport.SseTransport;
@@ -19,9 +18,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -67,9 +63,10 @@ public class McpAutoConfiguration {
                 .build();
 
         if (context != null) {
-            registerAnnotatedTools(server, context);
-            registerAnnotatedResources(server, context);
-            registerAnnotatedPrompts(server, context);
+            Map<String, Object> beans = context.getBeansWithAnnotation(com.mcp.annotation.McpServer.class);
+            for (Object bean : beans.values()) {
+                McpAnnotationScanner.scan(server, bean);
+            }
         }
 
         return server;
@@ -118,148 +115,5 @@ public class McpAutoConfiguration {
             log.info("Starting MCP Server with {} transport...", transport.getClass().getSimpleName());
             server.start(transport);
         };
-    }
-
-    /**
-     * 扫描并注册所有带 {@code @McpTool} 注解的方法为 MCP 工具。
-     * <p>
-     * 遍历 Spring 容器中所有带 {@code @McpServer} 注解的 Bean，查找其中标注了
-     * {@code @McpTool} 的方法，通过反射将方法参数与 MCP 工具参数进行绑定，
-     * 并将方法执行结果转换为 {@link ToolCallResult} 返回。
-     * </p>
-     *
-     * @param server  MCP 服务端实例
-     * @param context Spring 应用上下文
-     */
-    private void registerAnnotatedTools(McpServer server, ApplicationContext context) {
-        Map<String, Object> beans = context.getBeansWithAnnotation(com.mcp.annotation.McpServer.class);
-
-        for (Object bean : beans.values()) {
-            Class<?> clazz = bean.getClass();
-            for (Method method : clazz.getDeclaredMethods()) {
-                McpTool annotation = method.getAnnotation(McpTool.class);
-                if (annotation != null) {
-                    String toolName = annotation.name();
-                    String description = annotation.description();
-
-                    server.tool(toolName, description, arguments -> {
-                        try {
-                            Object[] args = resolveMethodArguments(method, arguments);
-                            Object result = method.invoke(bean, args);
-
-                            if (result instanceof ToolCallResult) {
-                                return (ToolCallResult) result;
-                            }
-                            return ToolCallResult.success(String.valueOf(result));
-                        } catch (Exception e) {
-                            return ToolCallResult.error("Tool execution failed: " + e.getMessage());
-                        }
-                    });
-
-                    log.debug("Registered tool: {}", toolName);
-                }
-            }
-        }
-    }
-
-    /**
-     * 扫描并注册所有带 {@code @McpResource} 注解的方法为 MCP 资源。
-     * <p>当前尚未实现，预留接口供后续扩展。</p>
-     *
-     * @param server  MCP 服务端实例
-     * @param context Spring 应用上下文
-     */
-    private void registerAnnotatedResources(McpServer server, ApplicationContext context) {
-        // TODO: 实现资源注册
-    }
-
-    /**
-     * 扫描并注册所有带 {@code @McpPrompt} 注解的方法为 MCP 提示模板。
-     * <p>当前尚未实现，预留接口供后续扩展。</p>
-     *
-     * @param server  MCP 服务端实例
-     * @param context Spring 应用上下文
-     */
-    private void registerAnnotatedPrompts(McpServer server, ApplicationContext context) {
-        // TODO: 实现 Prompt 注册
-    }
-
-    /**
-     * 解析 MCP 工具方法的参数，将调用参数映射到 Java 方法参数。
-     * <p>
-     * 参数绑定优先级：
-     * <ol>
-     *   <li>通过 {@code @Param} 注解的 name 属性匹配</li>
-     *   <li>通过方法参数名称匹配（无注解时的回退策略）</li>
-     * </ol>
-     * 如果标注了 {@code required = true} 的参数缺失，将抛出 {@link IllegalArgumentException}。
-     * </p>
-     *
-     * @param method    目标方法
-     * @param arguments MCP 调用传入的参数映射（参数名 -> 参数值）
-     * @return 绑定后的参数数组，可直接用于 {@link Method#invoke} 调用
-     * @throws IllegalArgumentException 当必需参数缺失时抛出
-     */
-    private Object[] resolveMethodArguments(Method method, Map<String, Object> arguments) {
-        Parameter[] parameters = method.getParameters();
-        Object[] args = new Object[parameters.length];
-
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter param = parameters[i];
-            com.mcp.annotation.Param paramAnnotation = param.getAnnotation(com.mcp.annotation.Param.class);
-
-            if (paramAnnotation != null) {
-                String paramName = paramAnnotation.name();
-                Object value = arguments.get(paramName);
-
-                if (value != null) {
-                    args[i] = convertValue(value, param.getType());
-                } else if (paramAnnotation.required()) {
-                    throw new IllegalArgumentException("Required parameter missing: " + paramName);
-                }
-            } else {
-                // 尝试按名称匹配
-                Object value = arguments.get(param.getName());
-                if (value != null) {
-                    args[i] = convertValue(value, param.getType());
-                }
-            }
-        }
-
-        return args;
-    }
-
-    /**
-     * 将 MCP 调用传入的参数值转换为目标 Java 类型。
-     * <p>
-     * 支持的类型转换包括：{@code String}、{@code int/Integer}、{@code long/Long}、
-     * {@code double/Double}、{@code boolean/Boolean}。
-     * 如果值已经是目标类型则直接返回，否则通过字符串中间表示进行解析。
-     * </p>
-     *
-     * @param value      原始参数值
-     * @param targetType 目标 Java 类型
-     * @return 转换后的参数值
-     */
-    private Object convertValue(Object value, Class<?> targetType) {
-        if (targetType.isInstance(value)) {
-            return value;
-        }
-
-        String strValue = String.valueOf(value);
-
-        if (targetType == String.class) {
-            return strValue;
-        } else if (targetType == int.class || targetType == Integer.class) {
-            return Integer.parseInt(strValue);
-        } else if (targetType == long.class || targetType == Long.class) {
-            return Long.parseLong(strValue);
-        } else if (targetType == double.class || targetType == Double.class) {
-            return Double.parseDouble(strValue);
-        } else if (targetType == boolean.class || targetType == Boolean.class) {
-            return Boolean.parseBoolean(strValue);
-        }
-
-        return value;
     }
 }

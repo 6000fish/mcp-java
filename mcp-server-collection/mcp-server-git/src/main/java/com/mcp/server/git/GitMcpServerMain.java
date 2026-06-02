@@ -1,5 +1,6 @@
 package com.mcp.server.git;
 
+import com.mcp.annotation.McpAnnotationScanner;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
 import com.mcp.transport.StdioTransport;
@@ -34,28 +35,8 @@ public class GitMcpServerMain {
                 .version("1.0.0")
                 .build();
 
-        // 注册工具
-        server.tool("git_status", "Show working tree status", params -> gitServer.gitStatus());
-        server.tool("git_log", "Show commit logs", params ->
-                gitServer.gitLog(params.get("count") != null ?
-                        Integer.parseInt(String.valueOf(params.get("count"))) : null));
-        server.tool("git_diff", "Show changes", params ->
-                gitServer.gitDiff((String) params.get("target")));
-        server.tool("git_branch", "Manage branches", params ->
-                gitServer.gitBranch(
-                        (String) params.get("action"),
-                        (String) params.get("name")));
-        server.tool("git_checkout", "Switch branches", params ->
-                gitServer.gitCheckout((String) params.get("branch")));
-        server.tool("git_commit", "Create a commit", params ->
-                gitServer.gitCommit((String) params.get("message")));
-        server.tool("git_stash", "Stash changes", params ->
-                gitServer.gitStash((String) params.get("action")));
-        server.tool("git_remote", "Show remote info", params -> gitServer.gitRemote());
-        server.tool("git_show", "Show commit details", params ->
-                gitServer.gitShow((String) params.get("commit")));
-        server.tool("git_blame", "Show file blame", params ->
-                gitServer.gitBlame((String) params.get("file")));
+        // 通过注解自动注册工具
+        McpAnnotationScanner.scan(server, gitServer);
 
         // 启动服务
         server.start(new StdioTransport());

@@ -5,6 +5,7 @@ import com.mcp.server.McpServer;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * MySQL MCP Server 启动类。
@@ -57,23 +58,8 @@ public class MySqlMcpServerMain {
                 .version("1.0.0")
                 .build();
 
-        // 注册工具
-        server.tool("query", "Execute a SQL query", params ->
-                mySqlServer.query((String) params.get("sql")));
-        server.tool("execute", "Execute a SQL statement", params ->
-                mySqlServer.execute((String) params.get("sql")));
-        server.tool("list_databases", "List all databases", params ->
-                mySqlServer.listDatabases());
-        server.tool("list_tables", "List all tables", params ->
-                mySqlServer.listTables((String) params.get("database")));
-        server.tool("describe_table", "Describe table structure", params ->
-                mySqlServer.describeTable(
-                        (String) params.get("table"),
-                        (String) params.get("database")));
-        server.tool("explain_query", "Get execution plan", params ->
-                mySqlServer.explainQuery((String) params.get("sql")));
-        server.tool("get_table_status", "Get table status", params ->
-                mySqlServer.getTableStatus((String) params.get("database")));
+        // 通过注解自动注册工具
+        McpAnnotationScanner.scan(server, mySqlServer);
 
         // 启动服务
         server.start(new StdioTransport());

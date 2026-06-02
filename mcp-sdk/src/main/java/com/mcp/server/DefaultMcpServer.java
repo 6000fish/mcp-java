@@ -194,9 +194,27 @@ public class DefaultMcpServer implements McpServer {
     public ResourceContent readResource(String uri) {
         ResourceEntry entry = resources.get(uri);
         if (entry == null) {
+            // 尝试 URI 模板匹配（如 file:///{path} 匹配 file:///etc/hosts）
+            for (ResourceEntry re : resources.values()) {
+                if (matchesUriTemplate(re.uri, uri)) {
+                    entry = re;
+                    break;
+                }
+            }
+        }
+        if (entry == null) {
             throw McpException.resourceNotFound(uri);
         }
         return entry.provider.read(uri);
+    }
+
+    /**
+     * 判断实际 URI 是否匹配模板 URI。
+     * 将模板中的 {param} 替换为 [^/]+ 正则，然后进行匹配。
+     */
+    private boolean matchesUriTemplate(String template, String actual) {
+        String regex = template.replaceAll("\\{[^}]+}", "(.+)");
+        return actual.matches(regex);
     }
 
     /**

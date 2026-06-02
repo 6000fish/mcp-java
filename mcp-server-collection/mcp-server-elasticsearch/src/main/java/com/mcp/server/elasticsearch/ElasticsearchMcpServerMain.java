@@ -5,6 +5,7 @@ import com.mcp.server.McpServer;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * Elasticsearch MCP Server 启动类
@@ -42,28 +43,8 @@ public class ElasticsearchMcpServerMain {
                 .version("1.0.0")
                 .build();
 
-        // 注册工具
-        server.tool("search", "Search documents", params ->
-                esServer.search((String) params.get("index"), (String) params.get("query")));
-        server.tool("index_document", "Index a document", params ->
-                esServer.indexDocument(
-                        (String) params.get("index"),
-                        (String) params.get("id"),
-                        (String) params.get("document")));
-        server.tool("get_document", "Get a document", params ->
-                esServer.getDocument((String) params.get("index"), (String) params.get("id")));
-        server.tool("delete_document", "Delete a document", params ->
-                esServer.deleteDocument((String) params.get("index"), (String) params.get("id")));
-        server.tool("list_indices", "List all indices", params -> esServer.listIndices());
-        server.tool("get_index_mapping", "Get index mapping", params ->
-                esServer.getIndexMapping((String) params.get("index")));
-        server.tool("get_index_stats", "Get index stats", params ->
-                esServer.getIndexStats((String) params.get("index")));
-        server.tool("count", "Count documents", params ->
-                esServer.count((String) params.get("index"), (String) params.get("query")));
-        server.tool("bulk", "Bulk operations", params ->
-                esServer.bulk((String) params.get("body")));
-        server.tool("cluster_health", "Cluster health", params -> esServer.clusterHealth());
+        // 通过注解自动注册工具
+        McpAnnotationScanner.scan(server, esServer);
 
         // 启动服务
         server.start(new StdioTransport());
