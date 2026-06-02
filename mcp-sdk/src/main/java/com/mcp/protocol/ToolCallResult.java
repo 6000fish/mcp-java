@@ -38,8 +38,7 @@ public class ToolCallResult {
      */
     public static ToolCallResult json(Object data) {
         try {
-            String json = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .writeValueAsString(data);
+            String json = JsonUtils.toJson(data);
             return success(json);
         } catch (Exception e) {
             return error("Failed to serialize result: " + e.getMessage());

@@ -43,8 +43,7 @@ public class ResourceContent {
      */
     public static ResourceContent json(String uri, Object data) {
         try {
-            String json = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .writeValueAsString(data);
+            String json = JsonUtils.toJson(data);
             return ResourceContent.builder()
                     .uri(uri)
                     .mimeType("application/json")
