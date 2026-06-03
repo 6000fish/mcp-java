@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.util.*;
 
@@ -46,6 +48,13 @@ import java.util.*;
 public class RedisMcpServer {
 
     private static final Logger log = LoggerFactory.getLogger(RedisMcpServer.class);
+
+    private static final int MAX_KEY_LENGTH = 512;
+    private static final int MAX_FIELD_LENGTH = 512;
+    private static final int MAX_KEYS_RETURNED = 100;
+    private static final int MAX_COLLECTION_ITEMS = 100;
+    private static final long MAX_TTL_SECONDS = 30L * 24 * 60 * 60;
+    private static final Set<String> SAFE_INFO_SECTIONS = Set.of("server", "clients", "memory", "stats", "keyspace", "cpu");
 
     /** Jedis 连接池，管理与 Redis 服务器的连接 */
     private final JedisPool jedisPool;
@@ -88,6 +97,7 @@ public class RedisMcpServer {
             @Param(name = "key", description = "Redis key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             String value = jedis.get(key);
             if (value == null) {
                 return ToolCallResult.success("(nil)");
@@ -117,7 +127,9 @@ public class RedisMcpServer {
             @Param(name = "ttl", description = "Optional expiration time in seconds. Leave empty to keep the key persistent.", required = false) Long ttl
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             if (ttl != null) {
+                requireSafeTtl(ttl);
                 jedis.setex(key, ttl, value);
             } else {
                 jedis.set(key, value);
@@ -138,17 +150,11 @@ public class RedisMcpServer {
      * @param keys 要删除的键名，多个键以逗号（{@code ,}）分隔
      * @return 操作结果，包含实际删除的键数量
      */
-    @McpTool(name = "del", description = "Delete one or more Redis keys and return the number of keys removed. Use only when the user explicitly asks to remove keys.")
+    @McpTool(name = "del", description = "Redis key deletion is disabled by the default MCP safety policy to avoid accidental data loss.")
     public ToolCallResult del(
-            @Param(name = "keys", description = "One key or multiple comma-separated keys to delete") String keys
+            @Param(name = "keys", description = "Redis key deletion is disabled by the default safety policy") String keys
     ) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            String[] keyArray = keys.split(",");
-            long deleted = jedis.del(keyArray);
-            return ToolCallResult.success("Deleted " + deleted + " key(s)");
-        } catch (Exception e) {
-            return ToolCallResult.error("DEL failed: " + e.getMessage());
-        }
+        return ToolCallResult.error("DEL is disabled by the MCP Redis safety policy");
     }
 
     /**
@@ -162,12 +168,23 @@ public class RedisMcpServer {
      * @param pattern 匹配模式，支持通配符 {@code *}、{@code ?}、{@code [abc]} 等
      * @return 匹配的键名集合，以 JSON 数组格式返回
      */
-    @McpTool(name = "keys", description = "Find Redis keys matching a glob pattern such as user:* or session:?. Use a narrow pattern; avoid broad patterns like * on large production databases.")
+    @McpTool(name = "keys", description = "Find up to 100 Redis keys with a narrow namespaced pattern such as user:* or cache:profile:*. Broad patterns like * are rejected.")
     public ToolCallResult keys(
-            @Param(name = "pattern", description = "Redis glob pattern to match, for example user:* or cache:profile:*") String pattern
+            @Param(name = "pattern", description = "Narrow Redis glob pattern, for example user:* or cache:profile:*") String pattern
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
-            Set<String> keys = jedis.keys(pattern);
+            requireNarrowKeyPattern(pattern);
+            Set<String> keys = new LinkedHashSet<>();
+            String cursor = ScanParams.SCAN_POINTER_START;
+            ScanParams params = new ScanParams().match(pattern).count(MAX_KEYS_RETURNED);
+            do {
+                ScanResult<String> result = jedis.scan(cursor, params);
+                keys.addAll(result.getResult());
+                cursor = result.getCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor) && keys.size() < MAX_KEYS_RETURNED);
+            if (keys.size() > MAX_KEYS_RETURNED) {
+                keys = new LinkedHashSet<>(new ArrayList<>(keys).subList(0, MAX_KEYS_RETURNED));
+            }
             return ToolCallResult.json(keys);
         } catch (Exception e) {
             return ToolCallResult.error("KEYS failed: " + e.getMessage());
@@ -189,6 +206,7 @@ public class RedisMcpServer {
             @Param(name = "key", description = "Redis key to inspect") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             String type = jedis.type(key);
             return ToolCallResult.success(type);
         } catch (Exception e) {
@@ -216,6 +234,7 @@ public class RedisMcpServer {
             @Param(name = "key", description = "Redis key whose expiration should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             long ttl = jedis.ttl(key);
             if (ttl == -1) {
                 return ToolCallResult.success("Key does not have an expiration");
@@ -242,6 +261,8 @@ public class RedisMcpServer {
             @Param(name = "field", description = "Hash field name to read") String field
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
+            requireSafeField(field);
             String value = jedis.hget(key, field);
             if (value == null) {
                 return ToolCallResult.success("(nil)");
@@ -268,6 +289,8 @@ public class RedisMcpServer {
             @Param(name = "value", description = "String value to store in the hash field") String value
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
+            requireSafeField(field);
             jedis.hset(key, field, value);
             return ToolCallResult.success("OK");
         } catch (Exception e) {
@@ -282,11 +305,16 @@ public class RedisMcpServer {
      * @param key 哈希表的键名
      * @return 字段-值映射，以 JSON 对象格式返回
      */
-    @McpTool(name = "hgetall", description = "Get all fields and values from a Redis hash as JSON. Use this when the user asks to inspect an entire hash object or profile.")
+    @McpTool(name = "hgetall", description = "Get all fields and values from a small Redis hash as JSON. Hashes with more than 100 fields are rejected; use hget for specific fields.")
     public ToolCallResult hgetall(
             @Param(name = "key", description = "Redis hash key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
+            long fieldCount = jedis.hlen(key);
+            if (fieldCount > MAX_COLLECTION_ITEMS) {
+                return ToolCallResult.error("HGETALL rejected: hash has more than " + MAX_COLLECTION_ITEMS + " fields; use hget for specific fields");
+            }
             Map<String, String> entries = jedis.hgetAll(key);
             return ToolCallResult.json(entries);
         } catch (Exception e) {
@@ -306,13 +334,15 @@ public class RedisMcpServer {
      * @param stop  结束索引（包含）
      * @return 指定范围内的元素列表，以 JSON 数组格式返回
      */
-    @McpTool(name = "lrange", description = "Get elements from a Redis list by inclusive index range. Use start 0 and stop -1 to read the whole list when the list is expected to be small.")
+    @McpTool(name = "lrange", description = "Get up to 100 elements from a Redis list by inclusive index range. Full-list reads such as 0 to -1 are rejected; use llen first.")
     public ToolCallResult lrange(
             @Param(name = "key", description = "Redis list key to read") String key,
             @Param(name = "start", description = "Inclusive start index, zero-based; negative values count from the end") long start,
-            @Param(name = "stop", description = "Inclusive stop index; use -1 for the last element") long stop
+            @Param(name = "stop", description = "Inclusive stop index; use a bounded range") long stop
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
+            requireSafeRange(start, stop);
             List<String> values = jedis.lrange(key, start, stop);
             return ToolCallResult.json(values);
         } catch (Exception e) {
@@ -332,6 +362,7 @@ public class RedisMcpServer {
             @Param(name = "key", description = "Redis list key whose length should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             long length = jedis.llen(key);
             return ToolCallResult.success(String.valueOf(length));
         } catch (Exception e) {
@@ -351,6 +382,7 @@ public class RedisMcpServer {
             @Param(name = "key", description = "Redis set key whose member count should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
             long count = jedis.scard(key);
             return ToolCallResult.success(String.valueOf(count));
         } catch (Exception e) {
@@ -365,11 +397,16 @@ public class RedisMcpServer {
      * @param key 集合的键名
      * @return 集合所有成员，以 JSON 数组格式返回
      */
-    @McpTool(name = "smembers", description = "Get all members from a Redis set as JSON. Use this only when the set is expected to be reasonably small; use scard for counts.")
+    @McpTool(name = "smembers", description = "Get all members from a small Redis set as JSON. Sets with more than 100 members are rejected; use scard for counts.")
     public ToolCallResult smembers(
             @Param(name = "key", description = "Redis set key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
+            requireSafeKey(key);
+            long memberCount = jedis.scard(key);
+            if (memberCount > MAX_COLLECTION_ITEMS) {
+                return ToolCallResult.error("SMEMBERS rejected: set has more than " + MAX_COLLECTION_ITEMS + " members; use scard for counts");
+            }
             Set<String> members = jedis.smembers(key);
             return ToolCallResult.json(members);
         } catch (Exception e) {
@@ -388,17 +425,13 @@ public class RedisMcpServer {
      * @param section 信息分类，可选；为空时返回全部信息
      * @return 服务器信息文本
      */
-    @McpTool(name = "info", description = "Get Redis server INFO output for all sections or one section such as server, clients, memory, stats, replication, cpu, or keyspace. Use this for diagnostics and runtime metadata.")
+    @McpTool(name = "info", description = "Get Redis server INFO output for a safe diagnostic section such as server, clients, memory, stats, keyspace, or cpu. A section is required.")
     public ToolCallResult info(
-            @Param(name = "section", description = "Optional Redis INFO section name. Leave empty to return all sections.", required = false) String section
+            @Param(name = "section", description = "Required safe Redis INFO section name, for example server, memory, stats, keyspace, or cpu", required = false) String section
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
-            String info;
-            if (section != null) {
-                info = jedis.info(section);
-            } else {
-                info = jedis.info();
-            }
+            requireSafeInfoSection(section);
+            String info = jedis.info(section.trim().toLowerCase(Locale.ROOT));
             return ToolCallResult.success(info);
         } catch (Exception e) {
             return ToolCallResult.error("INFO failed: " + e.getMessage());
@@ -419,6 +452,86 @@ public class RedisMcpServer {
         } catch (Exception e) {
             return ToolCallResult.error("DBSIZE failed: " + e.getMessage());
         }
+    }
+
+    static void requireSafeKey(String key) {
+        requireSafeText(key, MAX_KEY_LENGTH, "Redis key");
+    }
+
+    static void requireSafeField(String field) {
+        requireSafeText(field, MAX_FIELD_LENGTH, "Redis hash field");
+    }
+
+    static void requireSafeTtl(long ttl) {
+        if (ttl <= 0 || ttl > MAX_TTL_SECONDS) {
+            throw new IllegalArgumentException("TTL must be between 1 second and " + MAX_TTL_SECONDS + " seconds");
+        }
+    }
+
+    static void requireNarrowKeyPattern(String pattern) {
+        requireSafeText(pattern, MAX_KEY_LENGTH, "Redis key pattern");
+        String trimmed = pattern.trim();
+        if (trimmed.equals("*") || trimmed.startsWith("*") || trimmed.startsWith("?") || trimmed.startsWith("[")) {
+            throw new IllegalArgumentException("broad key patterns are not allowed");
+        }
+        int firstWildcard = firstWildcardIndex(trimmed);
+        if (firstWildcard >= 0) {
+            String prefix = trimmed.substring(0, firstWildcard);
+            if (prefix.length() < 3 || !prefix.contains(":")) {
+                throw new IllegalArgumentException("wildcard patterns must use a narrow namespace prefix such as user:*");
+            }
+        }
+    }
+
+    static void requireSafeRange(long start, long stop) {
+        if (start == 0 && stop == -1) {
+            throw new IllegalArgumentException("full-list reads are not allowed");
+        }
+        if (stop >= start && stop - start + 1 <= MAX_COLLECTION_ITEMS) {
+            return;
+        }
+        if (stop == -1 && start < 0 && Math.abs(start) <= MAX_COLLECTION_ITEMS) {
+            return;
+        }
+        throw new IllegalArgumentException("range must read at most " + MAX_COLLECTION_ITEMS + " items");
+    }
+
+    static void requireSafeInfoSection(String section) {
+        if (section == null || section.isBlank()) {
+            throw new IllegalArgumentException("INFO section is required");
+        }
+        String normalized = section.trim().toLowerCase(Locale.ROOT);
+        if (!SAFE_INFO_SECTIONS.contains(normalized)) {
+            throw new IllegalArgumentException("INFO section is not allowed: " + section);
+        }
+    }
+
+    private static void requireSafeText(String value, int maxLength, String label) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(label + " must not be blank");
+        }
+        if (!value.equals(value.trim())) {
+            throw new IllegalArgumentException(label + " must not contain leading or trailing whitespace");
+        }
+        if (value.length() > maxLength) {
+            throw new IllegalArgumentException(label + " must not exceed " + maxLength + " characters");
+        }
+        for (int i = 0; i < value.length(); i++) {
+            if (Character.isISOControl(value.charAt(i))) {
+                throw new IllegalArgumentException(label + " must not contain control characters");
+            }
+        }
+    }
+
+    private static int firstWildcardIndex(String pattern) {
+        int first = -1;
+        for (char wildcard : new char[]{'*', '?', '['}) {
+            int index = pattern.indexOf(wildcard);
+            if (index >= 0 && (first < 0 || index < first)) {
+                first = index;
+            }
+        }
+        return first;
     }
 
     /**

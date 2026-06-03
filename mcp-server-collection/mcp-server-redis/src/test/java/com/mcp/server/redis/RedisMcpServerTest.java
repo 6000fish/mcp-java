@@ -101,6 +101,57 @@ class RedisMcpServerTest {
         assertTrue(allPattern.equals("*"));
     }
 
+    @Test
+    void testSafeKeyPolicy() {
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeKey("user:123"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeKey("mcp:it:user:profile"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeKey(null));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeKey(""));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeKey("user:\n123"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeKey("a".repeat(513)));
+    }
+
+    @Test
+    void testSafeFieldPolicy() {
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeField("name"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeField(""));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeField("name\n"));
+    }
+
+    @Test
+    void testNarrowKeyPatternPolicy() {
+        assertDoesNotThrow(() -> RedisMcpServer.requireNarrowKeyPattern("user:*"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireNarrowKeyPattern("cache:profile:*"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireNarrowKeyPattern("user:123"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireNarrowKeyPattern("*"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireNarrowKeyPattern("*user*"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireNarrowKeyPattern("?ser:*"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireNarrowKeyPattern("u*"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireNarrowKeyPattern(""));
+    }
+
+    @Test
+    void testSafeInfoSectionPolicy() {
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeInfoSection("server"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeInfoSection("memory"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeInfoSection("stats"));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeInfoSection("keyspace"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeInfoSection(null));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeInfoSection(""));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeInfoSection("all"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeInfoSection("default"));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeInfoSection("replication"));
+    }
+
+    @Test
+    void testSafeRangePolicy() {
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeRange(0, 9));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeRange(0, 99));
+        assertDoesNotThrow(() -> RedisMcpServer.requireSafeRange(-10, -1));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeRange(0, -1));
+        assertThrows(IllegalArgumentException.class, () -> RedisMcpServer.requireSafeRange(0, 1000));
+    }
+
     // ==================== 3. 工具注册测试 ====================
 
     /**

@@ -47,21 +47,19 @@ class MySqlMcpServerTest {
      */
     @Test
     void testDangerousSqlDetection() {
-        // 测试各种危险 SQL 是否被正确识别
-        assertTrue(isDangerousSql("DROP TABLE users"));
-        assertTrue(isDangerousSql("DELETE FROM users"));
-        assertTrue(isDangerousSql("TRUNCATE TABLE users"));
-        assertTrue(isDangerousSql("ALTER TABLE users ADD COLUMN age INT"));
-        assertTrue(isDangerousSql("CREATE TABLE test (id INT)"));
-        assertTrue(isDangerousSql("GRANT ALL ON *.* TO 'user'@'%'"));
-        assertTrue(isDangerousSql("REVOKE ALL ON *.* FROM 'user'@'%'"));
+        assertTrue(MySqlMcpServer.isDangerousSql("DROP TABLE users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("DELETE FROM users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("TRUNCATE TABLE users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("ALTER TABLE users ADD COLUMN age INT"));
+        assertTrue(MySqlMcpServer.isDangerousSql("CREATE TABLE test (id INT)"));
+        assertTrue(MySqlMcpServer.isDangerousSql("GRANT ALL ON *.* TO 'user'@'%'"));
+        assertTrue(MySqlMcpServer.isDangerousSql("REVOKE ALL ON *.* FROM 'user'@'%'"));
 
-        // 测试安全 SQL 不被误判
-        assertFalse(isDangerousSql("SELECT * FROM users"));
-        assertFalse(isDangerousSql("SHOW DATABASES"));
-        assertFalse(isDangerousSql("SHOW TABLES"));
-        assertFalse(isDangerousSql("DESCRIBE users"));
-        assertFalse(isDangerousSql("EXPLAIN SELECT * FROM users"));
+        assertFalse(MySqlMcpServer.isDangerousSql("SELECT * FROM users"));
+        assertFalse(MySqlMcpServer.isDangerousSql("SHOW DATABASES"));
+        assertFalse(MySqlMcpServer.isDangerousSql("SHOW TABLES"));
+        assertFalse(MySqlMcpServer.isDangerousSql("DESCRIBE users"));
+        assertFalse(MySqlMcpServer.isDangerousSql("EXPLAIN SELECT * FROM users"));
     }
 
     /**
@@ -71,9 +69,9 @@ class MySqlMcpServerTest {
      */
     @Test
     void testDangerousSqlWithWhitespace() {
-        assertTrue(isDangerousSql("  DROP TABLE users"));
-        assertTrue(isDangerousSql("  DELETE FROM users  "));
-        assertFalse(isDangerousSql("  SELECT * FROM users  "));
+        assertTrue(MySqlMcpServer.isDangerousSql("  DROP TABLE users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("  DELETE FROM users  "));
+        assertFalse(MySqlMcpServer.isDangerousSql("  SELECT * FROM users  "));
     }
 
     /**
@@ -83,11 +81,11 @@ class MySqlMcpServerTest {
      */
     @Test
     void testDangerousSqlCaseInsensitive() {
-        assertTrue(isDangerousSql("drop table users"));
-        assertTrue(isDangerousSql("Drop Table Users"));
-        assertTrue(isDangerousSql("DROP TABLE USERS"));
-        assertFalse(isDangerousSql("select * from users"));
-        assertFalse(isDangerousSql("Select * From Users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("drop table users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("Drop Table Users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("DROP TABLE USERS"));
+        assertFalse(MySqlMcpServer.isDangerousSql("select * from users"));
+        assertFalse(MySqlMcpServer.isDangerousSql("Select * From Users"));
     }
 
     // ==================== 2. 工具注册测试 ====================
@@ -206,7 +204,7 @@ class MySqlMcpServerTest {
         // 注册一个模拟的 query 工具
         server.tool("query", "Execute SQL", params -> {
             String sql = (String) params.get("sql");
-            if (isDangerousSql(sql)) {
+            if (MySqlMcpServer.isDangerousSql(sql)) {
                 return ToolCallResult.error("Dangerous SQL operations are not allowed");
             }
             return ToolCallResult.success("ok");
@@ -238,7 +236,7 @@ class MySqlMcpServerTest {
         // 注册一个模拟的 query 工具
         server.tool("query", "Execute SQL", params -> {
             String sql = (String) params.get("sql");
-            if (isDangerousSql(sql)) {
+            if (MySqlMcpServer.isDangerousSql(sql)) {
                 return ToolCallResult.error("Dangerous SQL operations are not allowed");
             }
             // 模拟查询结果
@@ -360,25 +358,42 @@ class MySqlMcpServerTest {
         assertTrue(json.contains("users"));
     }
 
-    // ==================== 辅助方法 ====================
+    @Test
+    void testSqlCommentAndMultiStatementRejection() {
+        assertTrue(MySqlMcpServer.isDangerousSql("/* hidden */ DROP TABLE users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("-- hidden\nDELETE FROM users"));
+        assertTrue(MySqlMcpServer.isDangerousSql("# hidden\nTRUNCATE TABLE users"));
 
-    /**
-     * SQL 安全检查方法
-     *
-     * 用于判断 SQL 语句是否为危险操作
-     * 危险操作包括：DROP、DELETE、TRUNCATE、ALTER、CREATE、GRANT、REVOKE
-     *
-     * @param sql SQL 语句
-     * @return true 表示危险，false 表示安全
-     */
-    private boolean isDangerousSql(String sql) {
-        String upper = sql.toUpperCase().trim();
-        return upper.startsWith("DROP") ||
-                upper.startsWith("DELETE") ||
-                upper.startsWith("TRUNCATE") ||
-                upper.startsWith("ALTER") ||
-                upper.startsWith("CREATE") ||
-                upper.startsWith("GRANT") ||
-                upper.startsWith("REVOKE");
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireReadOnlySelect("SELECT * FROM users; DROP TABLE users"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireSafeDataModification("INSERT INTO users(name) VALUES ('a'); DELETE FROM users"));
+    }
+
+    @Test
+    void testReadOnlyQueryPolicy() {
+        assertEquals("SELECT * FROM users", MySqlMcpServer.requireReadOnlySelect(" SELECT * FROM users; "));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireReadOnlySelect("UPDATE users SET name = 'x'"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireReadOnlySelect("INSERT INTO users(name) VALUES ('x')"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireReadOnlySelect("SELECT * FROM users INTO OUTFILE '/tmp/users.txt'"));
+    }
+
+    @Test
+    void testDataModificationPolicy() {
+        assertEquals("INSERT INTO users(name) VALUES ('x')", MySqlMcpServer.requireSafeDataModification("INSERT INTO users(name) VALUES ('x')"));
+        assertEquals("UPDATE users SET name = 'x' WHERE id = 1", MySqlMcpServer.requireSafeDataModification("UPDATE users SET name = 'x' WHERE id = 1"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireSafeDataModification("DELETE FROM users WHERE id = 1"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireSafeDataModification("REPLACE INTO users(id, name) VALUES (1, 'x')"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.requireSafeDataModification("LOAD DATA INFILE '/tmp/users.csv' INTO TABLE users"));
+    }
+
+    @Test
+    void testIdentifierPolicy() {
+        assertEquals("`users`", MySqlMcpServer.quoteIdentifier("users"));
+        assertEquals("`mcp_test`", MySqlMcpServer.quoteIdentifier("mcp_test"));
+        assertEquals("`_internal`", MySqlMcpServer.quoteIdentifier("_internal"));
+        assertEquals("`mcp_test`.`users`", MySqlMcpServer.qualifiedIdentifier("mcp_test", "users"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.quoteIdentifier("users; DROP TABLE users"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.quoteIdentifier("db.table"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.quoteIdentifier("`users`"));
+        assertThrows(IllegalArgumentException.class, () -> MySqlMcpServer.quoteIdentifier(""));
     }
 }

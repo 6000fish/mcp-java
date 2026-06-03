@@ -139,6 +139,40 @@ class RedisMcpServerIntegrationTest {
     }
 
     /**
+     * 验证 Redis MCP 工具会拒绝删除、宽泛 key 查询和全量读取，同时保留窄范围诊断能力。
+     */
+    @Test
+    void testRedisSafetyPolicyRejectsUnsafeOperations() {
+        ToolCallResult broadKeys = callTool("keys", Map.of("pattern", "*"));
+        assertTrue(broadKeys.getIsError());
+        assertTrue(broadKeys.getContent().get(0).getText().contains("broad key patterns"));
+
+        ToolCallResult deleteResult = callTool("del", Map.of("keys", "mcp:it:user:1"));
+        assertTrue(deleteResult.getIsError());
+        assertTrue(deleteResult.getContent().get(0).getText().contains("disabled"));
+
+        ToolCallResult getAfterDelete = callTool("get", Map.of("key", "mcp:it:user:1"));
+        assertFalse(getAfterDelete.getIsError());
+        assertEquals("Alice", getAfterDelete.getContent().get(0).getText());
+
+        ToolCallResult allInfo = callTool("info", Map.of());
+        assertTrue(allInfo.getIsError());
+        assertTrue(allInfo.getContent().get(0).getText().contains("INFO section is required"));
+
+        ToolCallResult serverInfo = callTool("info", Map.of("section", "server"));
+        assertFalse(serverInfo.getIsError());
+        assertTrue(serverInfo.getContent().get(0).getText().contains("redis_version"));
+
+        ToolCallResult fullList = callTool("lrange", Map.of(
+                "key", "mcp:it:list",
+                "start", 0,
+                "stop", -1
+        ));
+        assertTrue(fullList.getIsError());
+        assertTrue(fullList.getContent().get(0).getText().contains("full-list reads"));
+    }
+
+    /**
      * 验证自然语言问题经大模型选择工具后，MCP 能执行模型返回的 Redis 工具调用。
      */
     @Test
@@ -163,7 +197,9 @@ class RedisMcpServerIntegrationTest {
      */
     private void prepareRedis() {
         try (Jedis jedis = createJedis()) {
-            jedis.del("mcp:it:user:1", "mcp:it:user:profile", "mcp:it:session");
+            jedis.del("mcp:it:user:1", "mcp:it:user:profile", "mcp:it:session", "mcp:it:list");
+            jedis.set("mcp:it:user:1", "Alice");
+            jedis.rpush("mcp:it:list", "one", "two", "three");
             jedis.hset("mcp:it:user:profile", Map.of(
                     "name", "Bob",
                     "role", "admin"
@@ -180,7 +216,7 @@ class RedisMcpServerIntegrationTest {
             return;
         }
         try (Jedis jedis = createJedis()) {
-            jedis.del("mcp:it:user:1", "mcp:it:user:profile", "mcp:it:session");
+            jedis.del("mcp:it:user:1", "mcp:it:user:profile", "mcp:it:session", "mcp:it:list");
         }
     }
 

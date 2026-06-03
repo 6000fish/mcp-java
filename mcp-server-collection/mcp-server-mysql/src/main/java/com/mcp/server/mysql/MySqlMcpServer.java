@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * MySQL MCP Server 实现。
@@ -39,6 +40,21 @@ import java.util.*;
 public class MySqlMcpServer {
 
     private static final Logger log = LoggerFactory.getLogger(MySqlMcpServer.class);
+
+    private static final Pattern SIMPLE_IDENTIFIER = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+
+    private static final Set<String> READ_FORBIDDEN_KEYWORDS = Set.of(
+            "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE", "GRANT", "REVOKE",
+            "REPLACE", "LOAD", "CALL", "SET", "USE", "LOCK", "UNLOCK", "ANALYZE", "OPTIMIZE",
+            "REPAIR", "FLUSH", "RESET", "KILL", "SHUTDOWN", "INSTALL", "UNINSTALL", "OUTFILE",
+            "DUMPFILE", "LOAD_FILE"
+    );
+
+    private static final Set<String> WRITE_FORBIDDEN_KEYWORDS = Set.of(
+            "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE", "GRANT", "REVOKE", "REPLACE", "LOAD",
+            "CALL", "USE", "LOCK", "UNLOCK", "ANALYZE", "OPTIMIZE", "REPAIR", "FLUSH",
+            "RESET", "KILL", "SHUTDOWN", "INSTALL", "UNINSTALL", "OUTFILE", "DUMPFILE", "LOAD_FILE"
+    );
 
     /** HikariCP 数据库连接池，管理与 MySQL 的连接 */
     private final HikariDataSource dataSource;
@@ -86,9 +102,10 @@ public class MySqlMcpServer {
     public ToolCallResult query(
             @Param(name = "sql", description = "Read-only SELECT SQL to execute, for example: SELECT name, age FROM users WHERE id = 1") String sql
     ) {
-        // 安全检查
-        if (isDangerousSql(sql)) {
-            return ToolCallResult.error("Dangerous SQL operations are not allowed");
+        try {
+            sql = requireReadOnlySelect(sql);
+        } catch (IllegalArgumentException e) {
+            return ToolCallResult.error("Query not allowed: " + e.getMessage());
         }
 
         try (Connection conn = dataSource.getConnection();
@@ -128,9 +145,10 @@ public class MySqlMcpServer {
     public ToolCallResult execute(
             @Param(name = "sql", description = "Data modification SQL to execute, for example: INSERT INTO users(name, age) VALUES ('Alice', 28)") String sql
     ) {
-        // 安全检查
-        if (isDangerousSql(sql)) {
-            return ToolCallResult.error("Dangerous SQL operations are not allowed");
+        try {
+            sql = requireSafeDataModification(sql);
+        } catch (IllegalArgumentException e) {
+            return ToolCallResult.error("Execution not allowed: " + e.getMessage());
         }
 
         try (Connection conn = dataSource.getConnection();
@@ -185,8 +203,8 @@ public class MySqlMcpServer {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            String sql = database != null ?
-                    "SHOW TABLES FROM " + database :
+            String sql = hasText(database) ?
+                    "SHOW TABLES FROM " + quoteIdentifier(database) :
                     "SHOW TABLES";
 
             try (ResultSet rs = stmt.executeQuery(sql)) {
@@ -197,7 +215,7 @@ public class MySqlMcpServer {
                 return ToolCallResult.json(tables);
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             return ToolCallResult.error("Failed to list tables: " + e.getMessage());
         }
     }
@@ -218,7 +236,12 @@ public class MySqlMcpServer {
             @Param(name = "table", description = "Table name to inspect, without database prefix when database is provided separately") String table,
             @Param(name = "database", description = "Optional database name. Leave empty to inspect a table in the configured default database.", required = false) String database
     ) {
-        String fullTable = database != null ? database + "." + table : table;
+        String fullTable;
+        try {
+            fullTable = qualifiedIdentifier(database, table);
+        } catch (IllegalArgumentException e) {
+            return ToolCallResult.error("Invalid table identifier: " + e.getMessage());
+        }
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
@@ -257,6 +280,12 @@ public class MySqlMcpServer {
     public ToolCallResult explainQuery(
             @Param(name = "sql", description = "SELECT query to explain, without the EXPLAIN keyword") String sql
     ) {
+        try {
+            sql = requireReadOnlySelect(sql);
+        } catch (IllegalArgumentException e) {
+            return ToolCallResult.error("Explain not allowed: " + e.getMessage());
+        }
+
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("EXPLAIN " + sql)) {
@@ -297,8 +326,8 @@ public class MySqlMcpServer {
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            String sql = database != null ?
-                    "SHOW TABLE STATUS FROM " + database :
+            String sql = hasText(database) ?
+                    "SHOW TABLE STATUS FROM " + quoteIdentifier(database) :
                     "SHOW TABLE STATUS";
 
             try (ResultSet rs = stmt.executeQuery(sql)) {
@@ -317,30 +346,125 @@ public class MySqlMcpServer {
                 return ToolCallResult.json(status);
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             return ToolCallResult.error("Failed to get table status: " + e.getMessage());
         }
     }
 
-    /**
-     * 检测 SQL 语句是否为危险操作。
-     * <p>
-     * 判定规则：SQL 语句（去除前后空格并转为大写后）以以下关键字之一开头即视为危险：
-     * DROP、DELETE、TRUNCATE、ALTER、CREATE、GRANT、REVOKE。
-     * </p>
-     *
-     * @param sql 待检测的 SQL 语句
-     * @return {@code true} 表示危险操作，{@code false} 表示安全
-     */
-    private boolean isDangerousSql(String sql) {
-        String upper = sql.toUpperCase().trim();
-        return upper.startsWith("DROP") ||
-                upper.startsWith("DELETE") ||
-                upper.startsWith("TRUNCATE") ||
-                upper.startsWith("ALTER") ||
-                upper.startsWith("CREATE") ||
-                upper.startsWith("GRANT") ||
-                upper.startsWith("REVOKE");
+    static boolean isDangerousSql(String sql) {
+        try {
+            String normalized = normalizeSql(sql);
+            String upper = normalized.toUpperCase(Locale.ROOT);
+            return containsKeyword(upper, READ_FORBIDDEN_KEYWORDS) ||
+                    containsKeyword(upper, WRITE_FORBIDDEN_KEYWORDS);
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    static String requireReadOnlySelect(String sql) {
+        String normalized = normalizeSql(sql);
+        String upper = normalized.toUpperCase(Locale.ROOT);
+        if (!upper.startsWith("SELECT ") && !upper.equals("SELECT")) {
+            throw new IllegalArgumentException("only a single SELECT statement is allowed");
+        }
+        rejectKeywords(upper, READ_FORBIDDEN_KEYWORDS);
+        return normalized;
+    }
+
+    static String requireSafeDataModification(String sql) {
+        String normalized = normalizeSql(sql);
+        String upper = normalized.toUpperCase(Locale.ROOT);
+        if (!upper.startsWith("INSERT ") && !upper.startsWith("UPDATE ")) {
+            throw new IllegalArgumentException("only a single INSERT or UPDATE statement is allowed");
+        }
+        rejectKeywords(upper, WRITE_FORBIDDEN_KEYWORDS);
+        return normalized;
+    }
+
+    static String quoteIdentifier(String identifier) {
+        if (!hasText(identifier) || !SIMPLE_IDENTIFIER.matcher(identifier).matches()) {
+            throw new IllegalArgumentException("expected a simple identifier");
+        }
+        return "`" + identifier + "`";
+    }
+
+    static String qualifiedIdentifier(String database, String table) {
+        String quotedTable = quoteIdentifier(table);
+        if (!hasText(database)) {
+            return quotedTable;
+        }
+        return quoteIdentifier(database) + "." + quotedTable;
+    }
+
+    private static String normalizeSql(String sql) {
+        if (!hasText(sql)) {
+            throw new IllegalArgumentException("SQL must not be blank");
+        }
+        String normalized = stripLeadingComments(sql.trim()).trim();
+        if (normalized.endsWith(";")) {
+            normalized = normalized.substring(0, normalized.length() - 1).trim();
+        }
+        if (normalized.contains(";")) {
+            throw new IllegalArgumentException("multiple statements are not allowed");
+        }
+        if (normalized.isBlank()) {
+            throw new IllegalArgumentException("SQL must not be blank");
+        }
+        return normalized;
+    }
+
+    private static String stripLeadingComments(String sql) {
+        String value = sql;
+        boolean changed;
+        do {
+            changed = false;
+            String trimmed = value.stripLeading();
+            if (trimmed.startsWith("--")) {
+                int lineEnd = trimmed.indexOf('\n');
+                value = lineEnd >= 0 ? trimmed.substring(lineEnd + 1) : "";
+                changed = true;
+            } else if (trimmed.startsWith("#")) {
+                int lineEnd = trimmed.indexOf('\n');
+                value = lineEnd >= 0 ? trimmed.substring(lineEnd + 1) : "";
+                changed = true;
+            } else if (trimmed.startsWith("/*")) {
+                int commentEnd = trimmed.indexOf("*/");
+                if (commentEnd < 0) {
+                    throw new IllegalArgumentException("unterminated SQL comment");
+                }
+                value = trimmed.substring(commentEnd + 2);
+                changed = true;
+            }
+        } while (changed);
+        return value;
+    }
+
+    private static void rejectKeywords(String upperSql, Set<String> forbiddenKeywords) {
+        for (String keyword : forbiddenKeywords) {
+            if (containsKeyword(upperSql, keyword)) {
+                throw new IllegalArgumentException(keyword + " is not allowed");
+            }
+        }
+    }
+
+    private static boolean containsKeyword(String upperSql, Set<String> keywords) {
+        for (String keyword : keywords) {
+            if (containsKeyword(upperSql, keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsKeyword(String upperSql, String keyword) {
+        return Pattern.compile("(^|[^A-Z0-9_])" + Pattern.quote(keyword) + "([^A-Z0-9_]|$)")
+                .matcher(upperSql)
+                .find();
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     /**

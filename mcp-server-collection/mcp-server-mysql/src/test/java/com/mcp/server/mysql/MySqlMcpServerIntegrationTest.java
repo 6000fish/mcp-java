@@ -148,6 +148,36 @@ class MySqlMcpServerIntegrationTest {
     }
 
     /**
+     * 验证 MySQL MCP 工具会拒绝危险 SQL、非预期写入和标识符注入。
+     */
+    @Test
+    void testMysqlSafetyPolicyRejectsUnsafeOperations() {
+        ToolCallResult updateAsQuery = callTool("query", Map.of(
+                "sql", "UPDATE mcp_integration_users SET age = 99 WHERE name = 'Alice'"
+        ));
+        assertTrue(updateAsQuery.getIsError());
+        assertTrue(updateAsQuery.getContent().get(0).getText().contains("not allowed"));
+
+        ToolCallResult deleteResult = callTool("execute", Map.of(
+                "sql", "DELETE FROM mcp_integration_users WHERE name = 'Alice'"
+        ));
+        assertTrue(deleteResult.getIsError());
+        assertTrue(deleteResult.getContent().get(0).getText().contains("not allowed"));
+
+        ToolCallResult explainDelete = callTool("explain_query", Map.of(
+                "sql", "DELETE FROM mcp_integration_users WHERE name = 'Alice'"
+        ));
+        assertTrue(explainDelete.getIsError());
+        assertTrue(explainDelete.getContent().get(0).getText().contains("not allowed"));
+
+        ToolCallResult injectedTable = callTool("describe_table", Map.of(
+                "table", "mcp_integration_users; DROP TABLE mcp_integration_users"
+        ));
+        assertTrue(injectedTable.getIsError());
+        assertTrue(injectedTable.getContent().get(0).getText().contains("Invalid table identifier"));
+    }
+
+    /**
      * 验证自然语言插入请求经大模型选择工具后，MCP 能执行写入并让模型生成最终回复。
      */
     @Test
