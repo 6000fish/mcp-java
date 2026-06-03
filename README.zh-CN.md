@@ -198,6 +198,18 @@ cd mcp-java
 mvn clean install
 ```
 
+## 发布准备
+
+发布到 Maven Central 前，先确认你的 Central/Sonatype 账号已经完成 `com.mcp` namespace 校验，然后将 `1.0.0-SNAPSHOT` 改为正式发布版本。
+
+在本地 `~/.m2/settings.xml` 配置 `ossrh` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
+
+发布构建命令：
+
+```bash
+mvn clean deploy -Prelease -DskipTests
+```
+
 ## 贡献
 
 欢迎贡献！请阅读 [贡献指南](CONTRIBUTING.md)。

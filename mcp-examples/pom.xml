@@ -15,6 +15,10 @@
     <name>MCP Examples</name>
     <description>MCP usage examples</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <modules>
         <module>quick-start</module>
         <module>business-server-example</module>
