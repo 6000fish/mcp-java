@@ -83,9 +83,9 @@ public class RedisMcpServer {
      * @param key 要查询的 Redis 键名
      * @return 键对应的字符串值，或 {@code "(nil)"}（键不存在时），或错误信息
      */
-    @McpTool(name = "get", description = "Get the value of a key")
+    @McpTool(name = "get", description = "Get the string value stored at a Redis key. Use this for simple string keys; use hget or hgetall for hash fields.")
     public ToolCallResult get(
-            @Param(name = "key", description = "Redis key") String key
+            @Param(name = "key", description = "Redis key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             String value = jedis.get(key);
@@ -110,11 +110,11 @@ public class RedisMcpServer {
      * @param ttl   过期时间（秒），可选；为 {@code null} 时表示不设置过期时间
      * @return 操作结果，成功时返回 {@code "OK"}，失败时返回错误信息
      */
-    @McpTool(name = "set", description = "Set the value of a key")
+    @McpTool(name = "set", description = "Set a Redis string key to a value, optionally with a TTL in seconds. Use this for string values; use hset for hash fields.")
     public ToolCallResult set(
-            @Param(name = "key", description = "Redis key") String key,
-            @Param(name = "value", description = "Value to set") String value,
-            @Param(name = "ttl", description = "Expiration time in seconds", required = false) Long ttl
+            @Param(name = "key", description = "Redis key to write") String key,
+            @Param(name = "value", description = "String value to store") String value,
+            @Param(name = "ttl", description = "Optional expiration time in seconds. Leave empty to keep the key persistent.", required = false) Long ttl
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             if (ttl != null) {
@@ -138,9 +138,9 @@ public class RedisMcpServer {
      * @param keys 要删除的键名，多个键以逗号（{@code ,}）分隔
      * @return 操作结果，包含实际删除的键数量
      */
-    @McpTool(name = "del", description = "Delete one or more keys")
+    @McpTool(name = "del", description = "Delete one or more Redis keys and return the number of keys removed. Use only when the user explicitly asks to remove keys.")
     public ToolCallResult del(
-            @Param(name = "keys", description = "Keys to delete (comma-separated)") String keys
+            @Param(name = "keys", description = "One key or multiple comma-separated keys to delete") String keys
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             String[] keyArray = keys.split(",");
@@ -162,9 +162,9 @@ public class RedisMcpServer {
      * @param pattern 匹配模式，支持通配符 {@code *}、{@code ?}、{@code [abc]} 等
      * @return 匹配的键名集合，以 JSON 数组格式返回
      */
-    @McpTool(name = "keys", description = "Find all keys matching a pattern")
+    @McpTool(name = "keys", description = "Find Redis keys matching a glob pattern such as user:* or session:?. Use a narrow pattern; avoid broad patterns like * on large production databases.")
     public ToolCallResult keys(
-            @Param(name = "pattern", description = "Pattern to match (e.g., user:*)") String pattern
+            @Param(name = "pattern", description = "Redis glob pattern to match, for example user:* or cache:profile:*") String pattern
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             Set<String> keys = jedis.keys(pattern);
@@ -184,9 +184,9 @@ public class RedisMcpServer {
      * @param key 要查询的 Redis 键名
      * @return 数据类型名称（string/list/set/zset/hash/none）
      */
-    @McpTool(name = "type", description = "Determine the type stored at a key")
+    @McpTool(name = "type", description = "Return the Redis data type stored at a key, such as string, list, set, zset, hash, or none. Use this before choosing a type-specific tool when the key structure is unknown.")
     public ToolCallResult type(
-            @Param(name = "key", description = "Redis key") String key
+            @Param(name = "key", description = "Redis key to inspect") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             String type = jedis.type(key);
@@ -211,9 +211,9 @@ public class RedisMcpServer {
      * @param key 要查询的 Redis 键名
      * @return 剩余生存时间的描述信息
      */
-    @McpTool(name = "ttl", description = "Get the time to live for a key")
+    @McpTool(name = "ttl", description = "Get the remaining time to live for a Redis key. Returns seconds, or explains when the key has no expiration or does not exist.")
     public ToolCallResult ttl(
-            @Param(name = "key", description = "Redis key") String key
+            @Param(name = "key", description = "Redis key whose expiration should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             long ttl = jedis.ttl(key);
@@ -236,10 +236,10 @@ public class RedisMcpServer {
      * @param field 要查询的字段名
      * @return 字段对应的值，或 {@code "(nil)"}（字段不存在时）
      */
-    @McpTool(name = "hget", description = "Get the value of a hash field")
+    @McpTool(name = "hget", description = "Get one field value from a Redis hash. Use this when the user asks for a specific property inside a hash key.")
     public ToolCallResult hget(
-            @Param(name = "key", description = "Hash key") String key,
-            @Param(name = "field", description = "Hash field") String field
+            @Param(name = "key", description = "Redis hash key to read") String key,
+            @Param(name = "field", description = "Hash field name to read") String field
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             String value = jedis.hget(key, field);
@@ -261,11 +261,11 @@ public class RedisMcpServer {
      * @param value 要存储的值
      * @return 操作结果，成功时返回 {@code "OK"}
      */
-    @McpTool(name = "hset", description = "Set the value of a hash field")
+    @McpTool(name = "hset", description = "Set one field value in a Redis hash. Use this for structured object-like data instead of overwriting the whole key as a string.")
     public ToolCallResult hset(
-            @Param(name = "key", description = "Hash key") String key,
-            @Param(name = "field", description = "Hash field") String field,
-            @Param(name = "value", description = "Value to set") String value
+            @Param(name = "key", description = "Redis hash key to write") String key,
+            @Param(name = "field", description = "Hash field name to set") String field,
+            @Param(name = "value", description = "String value to store in the hash field") String value
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.hset(key, field, value);
@@ -282,9 +282,9 @@ public class RedisMcpServer {
      * @param key 哈希表的键名
      * @return 字段-值映射，以 JSON 对象格式返回
      */
-    @McpTool(name = "hgetall", description = "Get all fields and values in a hash")
+    @McpTool(name = "hgetall", description = "Get all fields and values from a Redis hash as JSON. Use this when the user asks to inspect an entire hash object or profile.")
     public ToolCallResult hgetall(
-            @Param(name = "key", description = "Hash key") String key
+            @Param(name = "key", description = "Redis hash key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             Map<String, String> entries = jedis.hgetAll(key);
@@ -306,11 +306,11 @@ public class RedisMcpServer {
      * @param stop  结束索引（包含）
      * @return 指定范围内的元素列表，以 JSON 数组格式返回
      */
-    @McpTool(name = "lrange", description = "Get a range of elements from a list")
+    @McpTool(name = "lrange", description = "Get elements from a Redis list by inclusive index range. Use start 0 and stop -1 to read the whole list when the list is expected to be small.")
     public ToolCallResult lrange(
-            @Param(name = "key", description = "List key") String key,
-            @Param(name = "start", description = "Start index") long start,
-            @Param(name = "stop", description = "Stop index") long stop
+            @Param(name = "key", description = "Redis list key to read") String key,
+            @Param(name = "start", description = "Inclusive start index, zero-based; negative values count from the end") long start,
+            @Param(name = "stop", description = "Inclusive stop index; use -1 for the last element") long stop
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> values = jedis.lrange(key, start, stop);
@@ -327,9 +327,9 @@ public class RedisMcpServer {
      * @param key 列表的键名
      * @return 列表长度
      */
-    @McpTool(name = "llen", description = "Get the length of a list")
+    @McpTool(name = "llen", description = "Get the number of elements in a Redis list. Use this before lrange when deciding a safe range to read.")
     public ToolCallResult llen(
-            @Param(name = "key", description = "List key") String key
+            @Param(name = "key", description = "Redis list key whose length should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             long length = jedis.llen(key);
@@ -346,9 +346,9 @@ public class RedisMcpServer {
      * @param key 集合的键名
      * @return 集合成员数量
      */
-    @McpTool(name = "scard", description = "Get the number of members in a set")
+    @McpTool(name = "scard", description = "Get the number of members in a Redis set. Use this to count unique members without retrieving the full set.")
     public ToolCallResult scard(
-            @Param(name = "key", description = "Set key") String key
+            @Param(name = "key", description = "Redis set key whose member count should be checked") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             long count = jedis.scard(key);
@@ -365,9 +365,9 @@ public class RedisMcpServer {
      * @param key 集合的键名
      * @return 集合所有成员，以 JSON 数组格式返回
      */
-    @McpTool(name = "smembers", description = "Get all members in a set")
+    @McpTool(name = "smembers", description = "Get all members from a Redis set as JSON. Use this only when the set is expected to be reasonably small; use scard for counts.")
     public ToolCallResult smembers(
-            @Param(name = "key", description = "Set key") String key
+            @Param(name = "key", description = "Redis set key to read") String key
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             Set<String> members = jedis.smembers(key);
@@ -388,9 +388,9 @@ public class RedisMcpServer {
      * @param section 信息分类，可选；为空时返回全部信息
      * @return 服务器信息文本
      */
-    @McpTool(name = "info", description = "Get server information")
+    @McpTool(name = "info", description = "Get Redis server INFO output for all sections or one section such as server, clients, memory, stats, replication, cpu, or keyspace. Use this for diagnostics and runtime metadata.")
     public ToolCallResult info(
-            @Param(name = "section", description = "Section to get (optional)", required = false) String section
+            @Param(name = "section", description = "Optional Redis INFO section name. Leave empty to return all sections.", required = false) String section
     ) {
         try (Jedis jedis = jedisPool.getResource()) {
             String info;
@@ -411,7 +411,7 @@ public class RedisMcpServer {
      *
      * @return 当前数据库的键数量
      */
-    @McpTool(name = "dbsize", description = "Get the number of keys in the current database")
+    @McpTool(name = "dbsize", description = "Get the number of keys in the currently selected Redis database. Use this for a quick database-size summary without listing keys.")
     public ToolCallResult dbsize() {
         try (Jedis jedis = jedisPool.getResource()) {
             long size = jedis.dbSize();
