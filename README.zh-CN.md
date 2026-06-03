@@ -60,6 +60,61 @@ server.start(new StdioTransport());
 }
 ```
 
+### 运行内置服务
+
+构建 Server Collection 模块：
+
+```bash
+mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
+mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
+```
+
+MySQL 服务示例：
+
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/mcp-server-mysql-1.0.0-SNAPSHOT.jar"
+      ],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "my_database",
+        "MYSQL_USERNAME": "my_user",
+        "MYSQL_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+
+Redis 服务示例：
+
+```json
+{
+  "mcpServers": {
+    "redis": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/mcp-server-redis-1.0.0-SNAPSHOT.jar"
+      ],
+      "env": {
+        "REDIS_HOST": "localhost",
+        "REDIS_PORT": "6379",
+        "REDIS_PASSWORD": ""
+      }
+    }
+  }
+}
+```
+
+真实密码只放在本地 Agent 配置或环境变量中，不要提交到 Git。stdio 模式下 stdout 保留给 MCP JSON-RPC 协议消息，服务日志会写入 stderr。
+
 ## Spring Boot 集成
 
 ```xml

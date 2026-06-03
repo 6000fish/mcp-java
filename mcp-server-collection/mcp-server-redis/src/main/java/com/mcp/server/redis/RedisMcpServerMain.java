@@ -1,11 +1,12 @@
 package com.mcp.server.redis;
 
+import com.mcp.annotation.McpAnnotationScanner;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
+import com.mcp.server.common.ServerEnv;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * Redis MCP Server 启动类。
@@ -38,9 +39,9 @@ public class RedisMcpServerMain {
      */
     public static void main(String[] args) throws Exception {
         // 从环境变量读取配置
-        String host = getEnvOrDefault("REDIS_HOST", "localhost");
-        int port = Integer.parseInt(getEnvOrDefault("REDIS_PORT", "6379"));
-        String password = getEnvOrDefault("REDIS_PASSWORD", null);
+        String host = ServerEnv.get("REDIS_HOST", "localhost");
+        int port = ServerEnv.getInt("REDIS_PORT", 6379);
+        String password = ServerEnv.get("REDIS_PASSWORD", null);
 
         log.info("Starting Redis MCP Server...");
         log.info("Connecting to Redis at {}:{}", host, port);
@@ -70,17 +71,5 @@ public class RedisMcpServerMain {
 
         // 阻塞主线程
         Thread.currentThread().join();
-    }
-
-    /**
-     * 从环境变量中获取配置值，若不存在则返回默认值。
-     *
-     * @param name         环境变量名称
-     * @param defaultValue 默认值
-     * @return 环境变量的值，若未设置则返回 {@code defaultValue}
-     */
-    private static String getEnvOrDefault(String name, String defaultValue) {
-        String value = System.getenv(name);
-        return value != null ? value : defaultValue;
     }
 }

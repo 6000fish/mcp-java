@@ -60,6 +60,61 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+### Run Ready-to-Use Servers
+
+Build the server collection modules:
+
+```bash
+mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
+mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
+```
+
+MySQL server example:
+
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/mcp-server-mysql-1.0.0-SNAPSHOT.jar"
+      ],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "my_database",
+        "MYSQL_USERNAME": "my_user",
+        "MYSQL_PASSWORD": "your_password"
+      }
+    }
+  }
+}
+```
+
+Redis server example:
+
+```json
+{
+  "mcpServers": {
+    "redis": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/mcp-server-redis-1.0.0-SNAPSHOT.jar"
+      ],
+      "env": {
+        "REDIS_HOST": "localhost",
+        "REDIS_PORT": "6379",
+        "REDIS_PASSWORD": ""
+      }
+    }
+  }
+}
+```
+
+Keep real passwords in your local Agent configuration or environment variables only. In stdio mode, stdout is reserved for MCP JSON-RPC messages and server logs are written to stderr.
+
 ## Spring Boot Integration
 
 ```xml

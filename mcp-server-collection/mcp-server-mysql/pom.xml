@@ -19,6 +19,11 @@
             <groupId>com.mcp</groupId>
             <artifactId>mcp-sdk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.mcp</groupId>
+            <artifactId>mcp-server-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.mysql</groupId>

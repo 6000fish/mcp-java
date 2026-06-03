@@ -16,6 +16,7 @@
     <description>Collection of MCP Server implementations</description>
 
     <modules>
+        <module>mcp-server-common</module>
         <module>mcp-server-mysql</module>
         <module>mcp-server-redis</module>
         <module>mcp-server-filesystem</module>

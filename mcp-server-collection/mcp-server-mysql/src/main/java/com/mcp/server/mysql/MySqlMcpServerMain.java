@@ -1,11 +1,12 @@
 package com.mcp.server.mysql;
 
+import com.mcp.annotation.McpAnnotationScanner;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
+import com.mcp.server.common.ServerEnv;
 import com.mcp.transport.StdioTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.mcp.annotation.McpAnnotationScanner;
 
 /**
  * MySQL MCP Server 启动类。
@@ -40,11 +41,11 @@ public class MySqlMcpServerMain {
      */
     public static void main(String[] args) throws Exception {
         // 从环境变量读取配置
-        String host = getEnvOrDefault("MYSQL_HOST", "localhost");
-        int port = Integer.parseInt(getEnvOrDefault("MYSQL_PORT", "3306"));
-        String database = getEnvOrDefault("MYSQL_DATABASE", "test");
-        String username = getEnvOrDefault("MYSQL_USERNAME", "root");
-        String password = getEnvOrDefault("MYSQL_PASSWORD", "");
+        String host = ServerEnv.get("MYSQL_HOST", "localhost");
+        int port = ServerEnv.getInt("MYSQL_PORT", 3306);
+        String database = ServerEnv.get("MYSQL_DATABASE", "test");
+        String username = ServerEnv.get("MYSQL_USERNAME", "root");
+        String password = ServerEnv.get("MYSQL_PASSWORD", "");
 
         log.info("Starting MySQL MCP Server...");
         log.info("Connecting to MySQL at {}:{}", host, port);
@@ -74,17 +75,5 @@ public class MySqlMcpServerMain {
 
         // 阻塞主线程
         Thread.currentThread().join();
-    }
-
-    /**
-     * 从环境变量中获取配置值，若不存在则返回默认值。
-     *
-     * @param name         环境变量名称
-     * @param defaultValue 默认值
-     * @return 环境变量的值，若未设置则返回 {@code defaultValue}
-     */
-    private static String getEnvOrDefault(String name, String defaultValue) {
-        String value = System.getenv(name);
-        return value != null ? value : defaultValue;
     }
 }
