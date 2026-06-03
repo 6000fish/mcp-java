@@ -60,6 +60,41 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+## Server Examples
+
+| Example | Path | What it shows |
+|---------|------|---------------|
+| Manual SDK server | `mcp-examples/quick-start` | Register tools/resources directly with `DefaultMcpServer` and start with stdio |
+| Custom business server | `mcp-examples/business-server-example` | Build an annotation-based business MCP Server without Spring |
+| Spring Boot server | `mcp-examples/spring-boot-example` | Use `@McpServer`, `@McpTool`, and Spring Boot auto-configuration |
+| MySQL server | `mcp-server-collection/mcp-server-mysql` | Run a ready-to-use database MCP Server configured by env vars |
+| Redis server | `mcp-server-collection/mcp-server-redis` | Run a ready-to-use cache MCP Server configured by env vars |
+
+Build and run the custom business server example:
+
+```bash
+mvn package -pl mcp-examples/business-server-example -am -DskipTests
+java -jar mcp-examples/business-server-example/target/business-server-example-1.0.0-SNAPSHOT.jar
+```
+
+Agent config example:
+
+```json
+{
+  "mcpServers": {
+    "business": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/business-server-example-1.0.0-SNAPSHOT.jar"
+      ]
+    }
+  }
+}
+```
+
+Use `quick-start` for manual SDK registration, `business-server-example` for annotation-based custom stdio servers, `spring-boot-example` for Spring Boot apps, and MySQL/Redis modules for ready-to-use data source servers.
+
 ### Run Ready-to-Use Servers
 
 Build the server collection modules:

@@ -60,6 +60,41 @@ server.start(new StdioTransport());
 }
 ```
 
+## Server 示例
+
+| 示例 | 路径 | 说明 |
+|------|------|------|
+| 手动 SDK Server | `mcp-examples/quick-start` | 使用 `DefaultMcpServer` 手动注册工具/资源，并通过 stdio 启动 |
+| 自定义业务 Server | `mcp-examples/business-server-example` | 不依赖 Spring，使用注解开发业务 MCP Server |
+| Spring Boot Server | `mcp-examples/spring-boot-example` | 使用 `@McpServer`、`@McpTool` 和 Spring Boot 自动配置 |
+| MySQL Server | `mcp-server-collection/mcp-server-mysql` | 使用环境变量配置并运行现成数据库 MCP Server |
+| Redis Server | `mcp-server-collection/mcp-server-redis` | 使用环境变量配置并运行现成缓存 MCP Server |
+
+构建并运行自定义业务 Server 示例：
+
+```bash
+mvn package -pl mcp-examples/business-server-example -am -DskipTests
+java -jar mcp-examples/business-server-example/target/business-server-example-1.0.0-SNAPSHOT.jar
+```
+
+Agent 配置示例：
+
+```json
+{
+  "mcpServers": {
+    "business": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "/absolute/path/to/business-server-example-1.0.0-SNAPSHOT.jar"
+      ]
+    }
+  }
+}
+```
+
+手动注册工具/资源用 `quick-start`，注解式自定义 stdio Server 用 `business-server-example`，Spring Boot 应用用 `spring-boot-example`，已有数据源接入用 MySQL/Redis 模块。
+
 ### 运行内置服务
 
 构建 Server Collection 模块：
