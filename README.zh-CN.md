@@ -193,7 +193,7 @@ mcp-java/
 ## 构建
 
 ```bash
-git clone https://github.com/yourusername/mcp-java.git
+git clone https://github.com/6000fish/mcp-java.git
 cd mcp-java
 mvn clean install
 ```
