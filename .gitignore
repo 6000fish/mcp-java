@@ -38,6 +38,7 @@ logs/
 .env
 .env.local
 .env.*.local
+**/src/test/resources/integration-test.properties
 
 # Java
 *.class
