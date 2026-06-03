@@ -18,6 +18,7 @@
     <modules>
         <module>quick-start</module>
         <module>spring-boot-example</module>
+        <module>client-example</module>
     </modules>
 
 </project>

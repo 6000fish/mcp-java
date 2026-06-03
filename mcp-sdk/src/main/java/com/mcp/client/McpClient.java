@@ -5,6 +5,7 @@ import com.mcp.transport.Transport;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * MCP 客户端接口
@@ -135,6 +136,28 @@ public interface McpClient {
      * @throws Exception Prompt 不存在或获取失败时抛出
      */
     PromptResult getPrompt(String name, Map<String, String> arguments) throws Exception;
+
+    /**
+     * 发送心跳检测
+     * <p>
+     * 向服务器发送 {@code ping} 请求，验证连接是否存活。
+     * </p>
+     *
+     * @return {@code true} 表示连接正常
+     * @throws Exception 连接异常或超时时抛出
+     */
+    boolean ping() throws Exception;
+
+    /**
+     * 注册服务器推送通知的回调处理器
+     * <p>
+     * 当服务器发送通知消息（如资源变更、日志消息等）时，
+     * 已注册的回调处理器会被调用。
+     * </p>
+     *
+     * @param handler 通知消息处理器
+     */
+    void onNotification(Consumer<JsonRpcMessage> handler);
 
     /**
      * 判断客户端是否已连接到服务器

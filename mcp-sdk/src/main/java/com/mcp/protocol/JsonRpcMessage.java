@@ -1,5 +1,6 @@
 package com.mcp.protocol;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -126,6 +127,7 @@ public class JsonRpcMessage {
      *
      * @return 如果是请求消息返回 true，否则返回 false
      */
+    @JsonIgnore
     public boolean isRequest() {
         return method != null && id != null;
     }
@@ -138,6 +140,7 @@ public class JsonRpcMessage {
      *
      * @return 如果是通知消息返回 true，否则返回 false
      */
+    @JsonIgnore
     public boolean isNotification() {
         return method != null && id == null;
     }
@@ -150,6 +153,7 @@ public class JsonRpcMessage {
      *
      * @return 如果是响应消息返回 true，否则返回 false
      */
+    @JsonIgnore
     public boolean isResponse() {
         return id != null && method == null;
     }

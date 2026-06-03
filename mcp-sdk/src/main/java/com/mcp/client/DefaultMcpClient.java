@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 /**
  * MCP 客户端默认实现
@@ -67,6 +69,9 @@ public class DefaultMcpClient implements McpClient {
 
     /** 等待响应的请求映射表，key 为请求 ID，value 为对应的 Future（用于异步匹配响应） */
     private final Map<Object, CompletableFuture<JsonRpcMessage>> pendingRequests = new ConcurrentHashMap<>();
+
+    /** 通知回调处理器列表，线程安全 */
+    private final List<Consumer<JsonRpcMessage>> notificationHandlers = new CopyOnWriteArrayList<>();
 
     /**
      * 使用默认超时时间创建 DefaultMcpClient 实例
@@ -210,8 +215,44 @@ public class DefaultMcpClient implements McpClient {
      * {@inheritDoc}
      */
     @Override
+    public boolean ping() throws Exception {
+        sendRequest(McpMethods.PING, null);
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onNotification(Consumer<JsonRpcMessage> handler) {
+        notificationHandlers.add(handler);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isConnected() {
         return transport != null && transport.isConnected();
+    }
+
+    /**
+     * 将 JSON-RPC 消息 id 统一转为 Long 类型。
+     * <p>
+     * Jackson 反序列化 JSON 整数时，小数值默认映射为 {@link Integer}，
+     * 而客户端发送时使用 {@link AtomicLong} 生成 {@link Long} 类型的 id。
+     * 若不进行类型统一，{@link ConcurrentHashMap} 的 {@code remove()} 因
+     * {@code Long.equals(Integer)} 返回 {@code false} 而无法匹配。
+     * </p>
+     *
+     * @param id 原始 id，可能为 Integer 或 Long
+     * @return 统一为 Long 类型的 id
+     */
+    private Object normalizeId(Object id) {
+        if (id instanceof Integer intId) {
+            return (long) intId;
+        }
+        return id;
     }
 
     /**
@@ -241,6 +282,13 @@ public class DefaultMcpClient implements McpClient {
         try {
             transport.send(request);
             return future.get(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.ExecutionException e) {
+            pendingRequests.remove(id);
+            Throwable cause = e.getCause();
+            if (cause instanceof McpException mcpEx) {
+                throw mcpEx;
+            }
+            throw new McpException("Request failed: " + cause.getMessage(), cause);
         } catch (Exception e) {
             pendingRequests.remove(id);
             throw new McpException("Request failed: " + e.getMessage(), e);
@@ -261,7 +309,10 @@ public class DefaultMcpClient implements McpClient {
      */
     private void handleMessage(JsonRpcMessage message) {
         if (message.isResponse()) {
-            CompletableFuture<JsonRpcMessage> future = pendingRequests.remove(message.getId());
+            // 将响应 id 统一转为 Long，与 sendRequest 中生成的 Long id 匹配
+            // Jackson 反序列化 JSON 整数时默认使用 Integer，而 ConcurrentHashMap 的 key 是 Long
+            Object responseId = normalizeId(message.getId());
+            CompletableFuture<JsonRpcMessage> future = pendingRequests.remove(responseId);
             if (future != null) {
                 if (message.getError() != null) {
                     future.completeExceptionally(
@@ -286,7 +337,13 @@ public class DefaultMcpClient implements McpClient {
      */
     private void handleNotification(JsonRpcMessage notification) {
         log.debug("Received notification: {}", notification.getMethod());
-        // 处理服务器推送的通知
+        for (Consumer<JsonRpcMessage> handler : notificationHandlers) {
+            try {
+                handler.accept(notification);
+            } catch (Exception e) {
+                log.error("Error in notification handler", e);
+            }
+        }
     }
 
     /**
