@@ -25,7 +25,7 @@
 <dependency>
     <groupId>com.mcp</groupId>
     <artifactId>mcp-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -60,6 +60,16 @@ server.start(new StdioTransport());
 }
 ```
 
+## 文档
+
+- [5 分钟快速开始](docs/zh-CN/quickstart.md)
+- [MySQL Server 使用手册](docs/zh-CN/mysql-server.md)
+- [Redis Server 使用手册](docs/zh-CN/redis-server.md)
+- [安全说明](docs/zh-CN/security.md)
+- [故障排查](docs/zh-CN/troubleshooting.md)
+- [发布手册](docs/zh-CN/release.md)
+- [MCP 市场提交材料](docs/zh-CN/mcp-directory-submission.md)
+
 ## Server 示例
 
 | 示例 | 路径 | 说明 |
@@ -74,7 +84,7 @@ server.start(new StdioTransport());
 
 ```bash
 mvn package -pl mcp-examples/business-server-example -am -DskipTests
-java -jar mcp-examples/business-server-example/target/business-server-example-1.0.0-SNAPSHOT.jar
+java -jar mcp-examples/business-server-example/target/business-server-example-0.1.0.jar
 ```
 
 Agent 配置示例：
@@ -86,7 +96,7 @@ Agent 配置示例：
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/business-server-example-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/business-server-example-0.1.0.jar"
       ]
     }
   }
@@ -113,7 +123,7 @@ MySQL 服务示例：
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -136,7 +146,7 @@ Redis 服务示例：
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -156,7 +166,7 @@ Redis 服务示例：
 <dependency>
     <groupId>com.mcp</groupId>
     <artifactId>mcp-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -200,7 +210,7 @@ mvn clean install
 
 ## 发布准备
 
-发布到 Maven Central 前，先确认你的 Central/Sonatype 账号已经完成 `com.mcp` namespace 校验，然后将 `1.0.0-SNAPSHOT` 改为正式发布版本。
+发布到 Maven Central 前，先确认你的 Central/Sonatype 账号已经完成 `com.mcp` namespace 校验。首个公开发布版本为 `0.1.0`。
 
 在本地 `~/.m2/settings.xml` 配置 `ossrh` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 

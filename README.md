@@ -25,7 +25,7 @@
 <dependency>
     <groupId>com.mcp</groupId>
     <artifactId>mcp-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -60,6 +60,16 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+## Documentation
+
+- [5-Minute Quick Start](docs/quickstart.md)
+- [MySQL Server Guide](docs/mysql-server.md)
+- [Redis Server Guide](docs/redis-server.md)
+- [Security Guide](docs/security.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Release Guide](docs/release.md)
+- [MCP Directory Submission Materials](docs/mcp-directory-submission.md)
+
 ## Server Examples
 
 | Example | Path | What it shows |
@@ -74,7 +84,7 @@ Build and run the custom business server example:
 
 ```bash
 mvn package -pl mcp-examples/business-server-example -am -DskipTests
-java -jar mcp-examples/business-server-example/target/business-server-example-1.0.0-SNAPSHOT.jar
+java -jar mcp-examples/business-server-example/target/business-server-example-0.1.0.jar
 ```
 
 Agent config example:
@@ -86,7 +96,7 @@ Agent config example:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/business-server-example-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/business-server-example-0.1.0.jar"
       ]
     }
   }
@@ -113,7 +123,7 @@ MySQL server example:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -136,7 +146,7 @@ Redis server example:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-1.0.0-SNAPSHOT.jar"
+        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -156,7 +166,7 @@ Keep real passwords in your local Agent configuration or environment variables o
 <dependency>
     <groupId>com.mcp</groupId>
     <artifactId>mcp-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -200,7 +210,7 @@ mvn clean install
 
 ## Publishing
 
-Before publishing to Maven Central, make sure the `com.mcp` namespace is verified in your Central/Sonatype account, then change `1.0.0-SNAPSHOT` to a release version.
+Before publishing to Maven Central, make sure the `com.mcp` namespace is verified in your Central/Sonatype account. The first public release version is `0.1.0`.
 
 Configure your local `~/.m2/settings.xml` with the `ossrh` server credentials and a local GPG signing key. Never commit Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
 
