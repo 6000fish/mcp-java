@@ -53,6 +53,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -108,6 +109,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -146,12 +148,20 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - Broad key patterns such as `*` are rejected.
 - Collection reads and returned key counts are bounded.
 
+## Compatibility notes
+
+- Stdio configuration should include `"type": "stdio"` for clients that require an explicit transport type.
+- Verified with Claude Code using MySQL and Redis stdio servers.
+- Verified with Codex using the MySQL stdio server, including `tools/list`, `tools/call`, and client `_meta` fields.
+- Tool definitions include `inputSchema`, stdio responses omit null fields, and server logs are written to stderr.
+
 ## Submission checklist
 
 - [ ] Confirm repository README links to Quick Start and server docs.
 - [ ] Confirm release artifacts are available from GitHub Releases.
-- [ ] Confirm example Agent configs use absolute jar paths.
+- [ ] Confirm example Agent configs use absolute jar paths and `"type": "stdio"`.
 - [ ] Confirm secrets are documented as local-only config.
+- [ ] Confirm Claude Code and Codex compatibility notes are included.
 - [ ] Submit MySQL server listing.
 - [ ] Submit Redis server listing.
 - [ ] Add badges or directory links back to README after approval.

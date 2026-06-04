@@ -53,6 +53,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -108,6 +109,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -146,12 +148,20 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - 拒绝 `*` 等宽泛 key pattern。
 - 限制集合读取和返回 key 数量。
 
+## 兼容性说明
+
+- stdio 配置建议包含 `"type": "stdio"`，兼容需要显式传输类型的客户端。
+- 已使用 Claude Code 验证 MySQL 和 Redis stdio server。
+- 已使用 Codex 验证 MySQL stdio server，包括 `tools/list`、`tools/call` 和客户端 `_meta` 字段。
+- 工具定义包含 `inputSchema`，stdio 响应省略 null 字段，服务日志写入 stderr。
+
 ## 提交检查清单
 
 - [ ] 确认仓库 README 已链接 Quick Start 和 Server 文档。
 - [ ] 确认 GitHub Releases 中已有发布产物。
-- [ ] 确认示例 Agent 配置使用绝对 jar 路径。
+- [ ] 确认示例 Agent 配置使用绝对 jar 路径和 `"type": "stdio"`。
 - [ ] 确认敏感信息说明为仅本地配置。
+- [ ] 确认已包含 Claude Code 和 Codex 兼容性说明。
 - [ ] 提交 MySQL Server 条目。
 - [ ] 提交 Redis Server 条目。
 - [ ] 审核通过后，将目录徽章或链接补回 README。
