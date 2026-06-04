@@ -66,5 +66,7 @@ lombok.config
 .qoder/
 .trellis/
 .windsurf/
-.github/
+.github/*
+!.github/workflows/
+!.github/workflows/**
 AGENTS.md
