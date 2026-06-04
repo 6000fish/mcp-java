@@ -241,9 +241,12 @@ Release build command:
 mvn clean deploy -Prelease -DskipTests
 ```
 
-## Contributing
+## Community
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
+- [Contributing Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 

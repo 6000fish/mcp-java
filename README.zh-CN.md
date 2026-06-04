@@ -241,9 +241,12 @@ mvn clean install
 mvn clean deploy -Prelease -DskipTests
 ```
 
-## 贡献
+## 社区
 
-欢迎贡献！请阅读 [贡献指南](CONTRIBUTING.md)。
+- [贡献指南](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+- [行为准则](CODE_OF_CONDUCT.md)
+- [更新日志](CHANGELOG.md)
 
 ## 许可证
 
