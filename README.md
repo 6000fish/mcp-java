@@ -110,6 +110,7 @@ Agent config example:
 {
   "mcpServers": {
     "business": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -137,6 +138,7 @@ MySQL server example:
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -160,6 +162,7 @@ Redis server example:
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

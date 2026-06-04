@@ -110,6 +110,7 @@ Agent 配置示例：
 {
   "mcpServers": {
     "business": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -137,6 +138,7 @@ MySQL 服务示例：
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -160,6 +162,7 @@ Redis 服务示例：
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
