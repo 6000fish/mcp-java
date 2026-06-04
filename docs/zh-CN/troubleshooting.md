@@ -62,6 +62,28 @@ mysql -h localhost -P 3306 -u root -p
 - `MYSQL_USERNAME`
 - `MYSQL_PASSWORD`
 
+## Agent 提示缺少 `type`
+
+部分客户端要求 MCP 配置中显式声明传输类型。在 `command` 同级添加 `"type": "stdio"`：
+
+```json
+{
+  "type": "stdio",
+  "command": "java"
+}
+```
+
+## 握手失败或重连失败
+
+先确认使用的是最新重新构建的 jar，并且 Agent 配置指向该 jar。严格客户端可能会因为 server 把日志写到 stdout、工具定义缺少 `inputSchema`、stdio 响应包含显式 null 字段而握手失败。
+
+内置 MySQL 和 Redis stdio server 已覆盖这些兼容性点：
+
+- 工具定义包含 `inputSchema`
+- 请求解析兼容 `_meta` 等客户端扩展字段
+- stdio 响应省略 null 字段
+- 日志写入 stderr
+
 ## 日志出现在 Agent 输出里
 
 stdio 模式下 stdout 必须只包含 MCP JSON-RPC 消息，日志应写入 stderr。

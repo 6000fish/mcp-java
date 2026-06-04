@@ -45,14 +45,15 @@ server.tool("greet", "问候某人", arguments -> {
 server.start(new StdioTransport());
 ```
 
-### 配置 Claude Desktop
+### 配置 MCP 客户端
 
-在 `claude_desktop_config.json` 中添加：
+在你的 Agent 配置中添加 stdio MCP Server：
 
 ```json
 {
   "mcpServers": {
     "my-server": {
+      "type": "stdio",
       "command": "java",
       "args": ["-jar", "my-server.jar"]
     }
@@ -62,13 +63,28 @@ server.start(new StdioTransport());
 
 ## 文档
 
+用户文档：
+
 - [5 分钟快速开始](docs/zh-CN/quickstart.md)
 - [MySQL Server 使用手册](docs/zh-CN/mysql-server.md)
 - [Redis Server 使用手册](docs/zh-CN/redis-server.md)
 - [安全说明](docs/zh-CN/security.md)
 - [故障排查](docs/zh-CN/troubleshooting.md)
+
+维护者文档：
+
 - [发布手册](docs/zh-CN/release.md)
 - [MCP 市场提交材料](docs/zh-CN/mcp-directory-submission.md)
+
+## 兼容性
+
+stdio Server 面向主流 MCP 客户端和 Agent 设计：
+
+- Claude Code：已验证 MySQL 和 Redis stdio Server。
+- Codex：已验证 MySQL stdio Server，包括 `tools/list`、`tools/call` 和客户端 `_meta` 字段。
+- opencode、OpenClaw、Gemini 相关工具等其他 MCP 客户端：使用相同的 stdio JSON-RPC 流程，建议按本文档中的配置结构接入。
+
+兼容性保障包括：工具定义始终返回必需的 `inputSchema`，请求解析兼容 `_meta` 等客户端扩展字段，stdio 响应省略 null 字段，并且日志写入 stderr，stdout 只保留给 MCP JSON-RPC 协议消息。
 
 ## Server 示例
 

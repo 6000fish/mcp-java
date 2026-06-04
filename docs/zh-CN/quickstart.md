@@ -25,6 +25,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -74,6 +75,7 @@ CREATE TABLE IF NOT EXISTS users (
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

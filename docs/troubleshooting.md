@@ -62,6 +62,28 @@ Check these environment variables in the Agent configuration:
 - `MYSQL_USERNAME`
 - `MYSQL_PASSWORD`
 
+## Agent reports missing `type`
+
+Some clients require the transport type in the MCP configuration. Add `"type": "stdio"` next to `command`:
+
+```json
+{
+  "type": "stdio",
+  "command": "java"
+}
+```
+
+## Handshake or reconnect fails
+
+Use the latest rebuilt jar and check that the Agent config points to that jar. Strict clients may fail if the server writes logs to stdout, returns tool definitions without `inputSchema`, or includes explicit null fields in stdio responses.
+
+The built-in MySQL and Redis stdio servers are tested for these compatibility points:
+
+- tool definitions include `inputSchema`
+- request parsing tolerates client extension fields such as `_meta`
+- stdio responses omit null fields
+- logs are written to stderr
+
 ## Logs appear in Agent output
 
 In stdio mode, stdout must contain only MCP JSON-RPC messages. Use stderr for logs.

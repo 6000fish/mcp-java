@@ -45,14 +45,15 @@ server.tool("greet", "Greet someone", arguments -> {
 server.start(new StdioTransport());
 ```
 
-### Configure Claude Desktop
+### Configure an MCP Client
 
-Add to `claude_desktop_config.json`:
+Add this server as a stdio MCP server in your Agent configuration:
 
 ```json
 {
   "mcpServers": {
     "my-server": {
+      "type": "stdio",
       "command": "java",
       "args": ["-jar", "my-server.jar"]
     }
@@ -62,13 +63,28 @@ Add to `claude_desktop_config.json`:
 
 ## Documentation
 
+User documentation:
+
 - [5-Minute Quick Start](docs/quickstart.md)
 - [MySQL Server Guide](docs/mysql-server.md)
 - [Redis Server Guide](docs/redis-server.md)
 - [Security Guide](docs/security.md)
 - [Troubleshooting](docs/troubleshooting.md)
+
+Maintainer documentation:
+
 - [Release Guide](docs/release.md)
 - [MCP Directory Submission Materials](docs/mcp-directory-submission.md)
+
+## Compatibility
+
+The stdio servers are designed for mainstream MCP clients and Agents:
+
+- Claude Code: verified with MySQL and Redis stdio servers.
+- Codex: verified with MySQL stdio server, including `tools/list`, `tools/call`, and client `_meta` fields.
+- Other MCP clients such as opencode, OpenClaw, Gemini-related tooling: use the same stdio JSON-RPC flow and should use the documented config shape.
+
+Compatibility safeguards include required `inputSchema` on tools, tolerant request parsing for client extension fields such as `_meta`, omitted null fields in stdio responses, and logging to stderr so stdout stays reserved for MCP JSON-RPC messages.
 
 ## Server Examples
 

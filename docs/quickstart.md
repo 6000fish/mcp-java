@@ -25,6 +25,7 @@ Add this to your Agent MCP configuration:
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
@@ -74,6 +75,7 @@ Add this to your Agent MCP configuration:
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",
