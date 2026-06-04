@@ -235,10 +235,10 @@ Before publishing to Maven Central, make sure the `com.mcp` namespace is verifie
 
 Configure your local `~/.m2/settings.xml` with the `ossrh` server credentials and a local GPG signing key. Never commit Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
 
-Release build command:
+Release build command for the first public Maven Central scope:
 
 ```bash
-mvn clean deploy -Prelease -DskipTests
+mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
 ## Community

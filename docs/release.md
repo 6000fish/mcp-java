@@ -6,11 +6,15 @@ This guide prepares the first public release, `0.1.0`.
 
 ## Release scope
 
-Maven Central first-release focus:
+Maven Central first-release artifacts:
 
+- `com.mcp:mcp-java:0.1.0` parent POM
 - `com.mcp:mcp-sdk:0.1.0`
 - `com.mcp:mcp-spring-boot-starter:0.1.0`
-- common modules required by the MySQL and Redis servers
+- `com.mcp:mcp-server-collection:0.1.0` parent POM
+- `com.mcp:mcp-server-common:0.1.0`
+- `com.mcp:mcp-server-mysql:0.1.0`
+- `com.mcp:mcp-server-redis:0.1.0`
 
 Executable server distribution focus:
 
@@ -29,7 +33,7 @@ Other server modules skip Maven deploy for now to avoid publishing less-polished
 ## Local verification
 
 ```bash
-mvn -pl mcp-sdk,mcp-spring-boot-starter,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis -am verify -DskipTests
+mvn -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis verify -DskipTests
 ```
 
 ## Release command
@@ -37,7 +41,7 @@ mvn -pl mcp-sdk,mcp-spring-boot-starter,mcp-server-collection/mcp-server-mysql,m
 Run this only after the account, signing key, and release scope are confirmed:
 
 ```bash
-mvn clean deploy -Prelease -DskipTests
+mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
 Run deploy or upload GitHub Release assets only after a separate explicit confirmation.

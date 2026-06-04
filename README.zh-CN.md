@@ -235,10 +235,10 @@ mvn clean install
 
 在本地 `~/.m2/settings.xml` 配置 `ossrh` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 
-发布构建命令：
+首个公开版本的 Maven Central 发布构建命令：
 
 ```bash
-mvn clean deploy -Prelease -DskipTests
+mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
 ## 社区

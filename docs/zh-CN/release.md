@@ -6,11 +6,15 @@
 
 ## 发布范围
 
-Maven Central 首发重点：
+Maven Central 首发产物：
 
+- `com.mcp:mcp-java:0.1.0` parent POM
 - `com.mcp:mcp-sdk:0.1.0`
 - `com.mcp:mcp-spring-boot-starter:0.1.0`
-- MySQL/Redis 运行所需的公共模块
+- `com.mcp:mcp-server-collection:0.1.0` parent POM
+- `com.mcp:mcp-server-common:0.1.0`
+- `com.mcp:mcp-server-mysql:0.1.0`
+- `com.mcp:mcp-server-redis:0.1.0`
 
 可执行 Server 分发重点：
 
@@ -29,7 +33,7 @@ Maven Central 首发重点：
 ## 本地验证
 
 ```bash
-mvn -pl mcp-sdk,mcp-spring-boot-starter,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis -am verify -DskipTests
+mvn -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis verify -DskipTests
 ```
 
 ## 发布命令
@@ -37,7 +41,7 @@ mvn -pl mcp-sdk,mcp-spring-boot-starter,mcp-server-collection/mcp-server-mysql,m
 仅在确认账号、签名和发布范围都无误后执行：
 
 ```bash
-mvn clean deploy -Prelease -DskipTests
+mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
 执行 deploy 或上传 GitHub Release 资产前，需要单独确认。
