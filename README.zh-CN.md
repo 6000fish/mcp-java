@@ -71,6 +71,7 @@ server.start(new StdioTransport());
 - [Redis Server 使用手册](docs/zh-CN/redis-server.md)
 - [安全说明](docs/zh-CN/security.md)
 - [故障排查](docs/zh-CN/troubleshooting.md)
+- [更新日志](CHANGELOG.md)
 
 维护者文档：
 

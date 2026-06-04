@@ -34,6 +34,7 @@ mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

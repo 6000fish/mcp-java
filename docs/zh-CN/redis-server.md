@@ -32,6 +32,7 @@ mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

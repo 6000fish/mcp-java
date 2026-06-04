@@ -34,6 +34,7 @@ Environment variables:
 {
   "mcpServers": {
     "mysql": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

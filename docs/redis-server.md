@@ -32,6 +32,7 @@ Environment variables:
 {
   "mcpServers": {
     "redis": {
+      "type": "stdio",
       "command": "java",
       "args": [
         "-jar",

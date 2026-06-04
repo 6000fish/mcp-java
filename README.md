@@ -71,6 +71,7 @@ User documentation:
 - [Redis Server Guide](docs/redis-server.md)
 - [Security Guide](docs/security.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [Changelog](CHANGELOG.md)
 
 Maintainer documentation:
 
