@@ -71,4 +71,5 @@ lombok.config
 !.github/workflows/**
 !.github/ISSUE_TEMPLATE/
 !.github/ISSUE_TEMPLATE/**
+!.github/pull_request_template.md
 AGENTS.md
