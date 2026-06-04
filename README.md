@@ -6,6 +6,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17+-green.svg)](https://www.oracle.com/java/)
+[![CI](https://github.com/6000fish/mcp-java/actions/workflows/ci.yml/badge.svg)](https://github.com/6000fish/mcp-java/actions/workflows/ci.yml)
 
 > Java implementation of [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
