@@ -1,5 +1,6 @@
 package com.mcp.transport;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcp.protocol.JsonRpcMessage;
 import org.slf4j.Logger;
@@ -76,6 +77,7 @@ public class StdioTransport implements Transport {
         this.outputStream = outputStream;
         this.outputWriter = new PrintStream(outputStream, true, StandardCharsets.UTF_8);
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     /**

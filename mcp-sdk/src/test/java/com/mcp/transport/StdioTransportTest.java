@@ -1,6 +1,7 @@
 package com.mcp.transport;
 
 import com.mcp.protocol.JsonRpcMessage;
+import com.mcp.protocol.Tool;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -139,6 +140,33 @@ class StdioTransportTest {
 
         JsonRpcMessage message = JsonRpcMessage.notification("test", null);
         assertThrows(IllegalStateException.class, () -> transport.send(message));
+    }
+
+    @Test
+    void testSendOmitsNullFields() throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        createTransport(output);
+        transport.start();
+
+        Tool tool = Tool.builder()
+                .name("test")
+                .description("test tool")
+                .inputSchema(Tool.InputSchema.builder()
+                        .type("object")
+                        .properties(java.util.Map.of("name", Tool.Property.builder()
+                                .type("string")
+                                .description("name")
+                                .build()))
+                        .required(java.util.List.of("name"))
+                        .build())
+                .build();
+
+        transport.send(JsonRpcMessage.successResponse(1, java.util.Map.of("tools", java.util.List.of(tool))));
+
+        String json = output.toString(StandardCharsets.UTF_8).trim();
+        assertFalse(json.contains("\":null"));
+        assertFalse(json.contains("\"enum\""));
+        assertFalse(json.contains("\"default\""));
     }
 
     private void createTransport(ByteArrayOutputStream output) {
