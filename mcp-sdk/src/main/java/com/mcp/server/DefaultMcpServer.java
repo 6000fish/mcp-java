@@ -84,7 +84,12 @@ public class DefaultMcpServer implements McpServer {
      */
     @Override
     public McpServer tool(String name, String description, ToolHandler handler) {
-        tools.put(name, new ToolEntry(name, description, handler));
+        return tool(name, description, emptyInputSchema(), handler);
+    }
+
+    @Override
+    public McpServer tool(String name, String description, Tool.InputSchema inputSchema, ToolHandler handler) {
+        tools.put(name, new ToolEntry(name, description, inputSchema, handler));
         return this;
     }
 
@@ -144,6 +149,7 @@ public class DefaultMcpServer implements McpServer {
                 .map(entry -> Tool.builder()
                         .name(entry.name)
                         .description(entry.description)
+                        .inputSchema(entry.inputSchema)
                         .build())
                 .toList();
     }
@@ -356,8 +362,8 @@ public class DefaultMcpServer implements McpServer {
      */
     private void handleToolsCall(Object id, Object params) {
         try {
-            ToolCallRequest request = objectMapper.convertValue(params, ToolCallRequest.class);
-            ToolCallResult result = callTool(request.getName(), request.getArguments());
+            ToolCallRequest request = objectMapper.convertValue(paramsAsMap(params), ToolCallRequest.class);
+            ToolCallResult result = callTool(request.getName(), request.getArguments() != null ? request.getArguments() : Map.of());
             sendResponse(id, result);
         } catch (McpException e) {
             sendErrorResponse(id, e.getCode(), e.getMessage());
@@ -387,7 +393,7 @@ public class DefaultMcpServer implements McpServer {
      */
     private void handleResourcesRead(Object id, Object params) {
         try {
-            Map<String, Object> paramMap = (Map<String, Object>) params;
+            Map<String, Object> paramMap = paramsAsMap(params);
             String uri = (String) paramMap.get("uri");
             ResourceContent content = readResource(uri);
             sendResponse(id, Map.of("contents", List.of(content)));
@@ -419,10 +425,9 @@ public class DefaultMcpServer implements McpServer {
      */
     private void handlePromptsGet(Object id, Object params) {
         try {
-            Map<String, Object> paramMap = (Map<String, Object>) params;
+            Map<String, Object> paramMap = paramsAsMap(params);
             String name = (String) paramMap.get("name");
-            Map<String, String> arguments = (Map<String, String>) paramMap.get("arguments");
-            PromptResult result = getPrompt(name, arguments != null ? arguments : Map.of());
+            PromptResult result = getPrompt(name, stringArguments(paramMap.get("arguments")));
             sendResponse(id, result);
         } catch (McpException e) {
             sendErrorResponse(id, e.getCode(), e.getMessage());
@@ -490,10 +495,46 @@ public class DefaultMcpServer implements McpServer {
         log.info("Transport closed");
     }
 
+    private static Map<String, Object> paramsAsMap(Object params) {
+        if (!(params instanceof Map<?, ?> rawMap)) {
+            return Map.of();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        rawMap.forEach((key, value) -> {
+            if (key instanceof String stringKey) {
+                result.put(stringKey, value);
+            }
+        });
+        return result;
+    }
+
+    private static Map<String, String> stringArguments(Object arguments) {
+        if (!(arguments instanceof Map<?, ?> rawMap)) {
+            return Map.of();
+        }
+
+        Map<String, String> result = new HashMap<>();
+        rawMap.forEach((key, value) -> {
+            if (key instanceof String stringKey && value != null) {
+                result.put(stringKey, String.valueOf(value));
+            }
+        });
+        return result;
+    }
+
+    private static Tool.InputSchema emptyInputSchema() {
+        return Tool.InputSchema.builder()
+                .type("object")
+                .properties(Map.of())
+                .required(List.of())
+                .build();
+    }
+
     /**
      * 工具条目，封装工具的元数据和处理器
      */
-    private record ToolEntry(String name, String description, ToolHandler handler) {}
+    private record ToolEntry(String name, String description, Tool.InputSchema inputSchema, ToolHandler handler) {}
 
     /**
      * 资源条目，封装资源的元数据和提供者

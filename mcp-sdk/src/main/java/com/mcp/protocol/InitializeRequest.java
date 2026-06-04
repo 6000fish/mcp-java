@@ -1,5 +1,6 @@
 package com.mcp.protocol;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InitializeRequest {
 
     /** 客户端支持的 MCP 协议版本号 */
@@ -49,6 +51,7 @@ public class InitializeRequest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ClientCapabilities {
         /** 根目录能力，声明客户端是否支持文件系统根目录列表功能 */
         @JsonProperty("roots")
@@ -69,6 +72,7 @@ public class InitializeRequest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RootsCapability {
         /** 是否支持根目录列表变更通知，为 true 时客户端会在根目录变化时通知服务端 */
         @JsonProperty("listChanged")

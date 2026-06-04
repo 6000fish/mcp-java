@@ -2,6 +2,7 @@ package com.mcp.annotation;
 
 import com.mcp.protocol.PromptResult;
 import com.mcp.protocol.ResourceContent;
+import com.mcp.protocol.Tool;
 import com.mcp.protocol.ToolCallResult;
 import com.mcp.server.McpServer;
 import org.slf4j.Logger;
@@ -9,7 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +73,9 @@ public class McpAnnotationScanner {
             String description = annotation.description();
             method.setAccessible(true);
 
-            server.tool(toolName, description, arguments -> {
+            Tool.InputSchema inputSchema = createInputSchema(method);
+
+            server.tool(toolName, description, inputSchema, arguments -> {
                 try {
                     Object[] args = resolveMethodArguments(method, arguments);
                     Object result = method.invoke(instance, args);
@@ -168,6 +173,52 @@ public class McpAnnotationScanner {
 
             log.debug("Registered prompt: {}", promptName);
         }
+    }
+
+    private static Tool.InputSchema createInputSchema(Method method) {
+        Map<String, Tool.Property> properties = new HashMap<>();
+        List<String> required = new ArrayList<>();
+
+        for (Parameter parameter : method.getParameters()) {
+            Param param = parameter.getAnnotation(Param.class);
+            String name = param != null ? param.name() : parameter.getName();
+            String description = param != null ? param.description() : "";
+
+            properties.put(name, Tool.Property.builder()
+                    .type(toJsonSchemaType(parameter.getType()))
+                    .description(description)
+                    .build());
+
+            if (param == null || param.required()) {
+                required.add(name);
+            }
+        }
+
+        return Tool.InputSchema.builder()
+                .type("object")
+                .properties(properties)
+                .required(required)
+                .build();
+    }
+
+    private static String toJsonSchemaType(Class<?> type) {
+        if (type == String.class || type == Character.class || type == char.class) {
+            return "string";
+        }
+        if (type == int.class || type == Integer.class || type == long.class || type == Long.class
+                || type == short.class || type == Short.class || type == byte.class || type == Byte.class) {
+            return "integer";
+        }
+        if (type == float.class || type == Float.class || type == double.class || type == Double.class) {
+            return "number";
+        }
+        if (type == boolean.class || type == Boolean.class) {
+            return "boolean";
+        }
+        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
+            return "array";
+        }
+        return "object";
     }
 
     /**

@@ -2,6 +2,7 @@ package com.mcp.annotation;
 
 import com.mcp.protocol.PromptResult;
 import com.mcp.protocol.ResourceContent;
+import com.mcp.protocol.Tool;
 import com.mcp.protocol.ToolCallResult;
 import com.mcp.server.DefaultMcpServer;
 import com.mcp.server.McpServer;
@@ -99,6 +100,19 @@ class McpAnnotationScannerTest {
         assertNotNull(result);
         assertTrue(result.getIsError());
         assertTrue(result.getContent().get(0).getText().contains("Required parameter missing"));
+    }
+
+    @Test
+    void testToolInputSchemaRegistration() {
+        McpAnnotationScanner.scan(server, new OptionalParamToolTestClass());
+
+        Tool tool = server.listTools().get(0);
+        assertNotNull(tool.getInputSchema());
+        assertEquals("object", tool.getInputSchema().getType());
+        assertEquals("string", tool.getInputSchema().getProperties().get("query").getType());
+        assertEquals("integer", tool.getInputSchema().getProperties().get("limit").getType());
+        assertEquals("搜索关键词", tool.getInputSchema().getProperties().get("query").getDescription());
+        assertEquals(List.of("query"), tool.getInputSchema().getRequired());
     }
 
     // ==================== 2. 资源注册测试 ====================
@@ -210,6 +224,17 @@ class McpAnnotationScannerTest {
                 @Param(name = "a", description = "加数") int a,
                 @Param(name = "b", description = "被加数") int b) {
             return ToolCallResult.success(String.valueOf(a + b));
+        }
+    }
+
+    @com.mcp.annotation.McpServer(name = "optional-param-tool-test", version = "1.0.0")
+    static class OptionalParamToolTestClass {
+
+        @McpTool(name = "search", description = "搜索")
+        public String search(
+                @Param(name = "query", description = "搜索关键词") String query,
+                @Param(name = "limit", description = "返回数量", required = false) Integer limit) {
+            return query + ":" + limit;
         }
     }
 

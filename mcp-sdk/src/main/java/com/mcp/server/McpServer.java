@@ -47,6 +47,19 @@ public interface McpServer {
     McpServer tool(String name, String description, ToolHandler handler);
 
     /**
+     * 注册带输入参数 Schema 的工具到服务器。
+     *
+     * @param name        工具名称（在服务器内唯一标识）
+     * @param description 工具描述（供客户端展示给用户或 AI 模型参考）
+     * @param inputSchema 工具输入参数的 JSON Schema
+     * @param handler     工具执行处理器
+     * @return 当前服务器实例，支持链式调用
+     */
+    default McpServer tool(String name, String description, Tool.InputSchema inputSchema, ToolHandler handler) {
+        return tool(name, description, handler);
+    }
+
+    /**
      * 注册资源到服务器
      * <p>
      * 资源是 MCP 协议中客户端可读取的数据源。注册后客户端可通过

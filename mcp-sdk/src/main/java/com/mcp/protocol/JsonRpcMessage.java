@@ -1,6 +1,7 @@
 package com.mcp.protocol;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonRpcMessage {
 
     /** JSON-RPC 协议版本号，固定为 "2.0" */
@@ -167,6 +169,7 @@ public class JsonRpcMessage {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class JsonRpcError {
         /** 错误码，遵循 JSON-RPC 规范定义的错误代码 */
         private int code;

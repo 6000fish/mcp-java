@@ -82,8 +82,13 @@ class DefaultMcpServerTest {
         List<Tool> tools = castList(result.get("tools"));
 
         assertEquals(1, tools.size());
-        assertEquals("greet", tools.get(0).getName());
-        assertEquals("打招呼", tools.get(0).getDescription());
+        Tool tool = tools.get(0);
+        assertEquals("greet", tool.getName());
+        assertEquals("打招呼", tool.getDescription());
+        assertNotNull(tool.getInputSchema());
+        assertEquals("object", tool.getInputSchema().getType());
+        assertTrue(tool.getInputSchema().getProperties().isEmpty());
+        assertTrue(tool.getInputSchema().getRequired().isEmpty());
     }
 
     @Test
@@ -216,6 +221,78 @@ class DefaultMcpServerTest {
         server.stop();
 
         assertFalse(transport.connected);
+    }
+
+    @Test
+    void testToolsCallIgnoresClientMeta() {
+        JsonRpcMessage response = sendRequest(13, McpMethods.TOOLS_CALL, Map.of(
+                "name", "greet",
+                "arguments", Map.of("name", "MCP"),
+                "_meta", Map.of("progressToken", "codex-test")
+        ));
+
+        assertNull(response.getError());
+        assertInstanceOf(ToolCallResult.class, response.getResult());
+
+        ToolCallResult result = (ToolCallResult) response.getResult();
+        assertFalse(result.getIsError());
+        assertEquals("Hello, MCP", result.getContent().get(0).getText());
+    }
+
+    @Test
+    void testInitializeIgnoresClientExtensions() {
+        JsonRpcMessage response = sendRequest(14, McpMethods.INITIALIZE, Map.of(
+                "protocolVersion", "2024-11-05",
+                "capabilities", Map.of(
+                        "roots", Map.of("listChanged", true, "extra", true),
+                        "experimental", Map.of("feature", true)
+                ),
+                "clientInfo", Map.of("name", "codex", "version", "test", "extra", "ignored"),
+                "_meta", Map.of("client", "compat-test")
+        ));
+
+        assertNull(response.getError());
+        assertInstanceOf(InitializeResult.class, response.getResult());
+    }
+
+    @Test
+    void testToolsCallAllowsMissingArguments() {
+        JsonRpcMessage response = sendRequest(15, McpMethods.TOOLS_CALL, Map.of("name", "greet"));
+
+        assertNull(response.getError());
+        assertInstanceOf(ToolCallResult.class, response.getResult());
+
+        ToolCallResult result = (ToolCallResult) response.getResult();
+        assertFalse(result.getIsError());
+        assertEquals("Hello, World", result.getContent().get(0).getText());
+    }
+
+    @Test
+    void testResourcesReadIgnoresClientMeta() {
+        JsonRpcMessage response = sendRequest(16, McpMethods.RESOURCES_READ, Map.of(
+                "uri", "config://app",
+                "_meta", Map.of("progressToken", "resource-test")
+        ));
+
+        assertNull(response.getError());
+        Map<String, Object> result = castMap(response.getResult());
+        List<ResourceContent> contents = castList(result.get("contents"));
+        assertEquals("config-content", contents.get(0).getText());
+    }
+
+    @Test
+    void testPromptsGetConvertsArgumentValuesAndIgnoresClientMeta() {
+        JsonRpcMessage response = sendRequest(17, McpMethods.PROMPTS_GET, Map.of(
+                "name", "review",
+                "arguments", Map.of("language", 123),
+                "_meta", Map.of("progressToken", "prompt-test")
+        ));
+
+        assertNull(response.getError());
+        assertInstanceOf(PromptResult.class, response.getResult());
+
+        PromptResult result = (PromptResult) response.getResult();
+        assertEquals("Review 123", result.getDescription());
     }
 
     private JsonRpcMessage sendRequest(Object id, String method, Object params) {
