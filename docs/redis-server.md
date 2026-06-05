@@ -52,20 +52,21 @@ Environment variables:
 
 | Tool | Description |
 |---|---|
-| `get` | Get a string key value |
-| `set` | Set a string key value, optionally with TTL |
-| `hget` | Read one hash field |
-| `hset` | Write one hash field |
-| `hgetall` | Read a small hash as JSON |
-| `keys` | Find up to 100 keys with a narrow namespaced pattern |
-| `type` | Return the data type stored at a key |
-| `ttl` | Return key TTL information |
-| `lrange` | Read a bounded Redis list range |
-| `llen` | Count Redis list elements |
-| `scard` | Count Redis set members |
-| `smembers` | Read a small Redis set |
-| `info` | Read a safe Redis INFO section |
-| `dbsize` | Count keys in the current Redis database |
+| `get(key)` | Get a string key value |
+| `set(key, value, ttl?)` | Set a string key value, optionally with TTL |
+| `del(keys)` | Registered but disabled by default safety policy |
+| `keys(pattern)` | Find up to 100 keys with a narrow namespaced pattern |
+| `type(key)` | Return the data type stored at a key |
+| `ttl(key)` | Return key TTL information |
+| `hget(key, field)` | Read one hash field |
+| `hset(key, field, value)` | Write one hash field |
+| `hgetall(key)` | Read a small hash as JSON |
+| `lrange(key, start, stop)` | Read a bounded Redis list range |
+| `llen(key)` | Count Redis list elements |
+| `scard(key)` | Count Redis set members |
+| `smembers(key)` | Read a small Redis set |
+| `info(section)` | Read a safe Redis INFO section |
+| `dbsize()` | Count keys in the current Redis database |
 
 ## Example prompts
 
@@ -83,7 +84,10 @@ Find keys under the demo:* namespace.
 
 ## Safety behavior
 
-- `del` is disabled by default to avoid accidental data loss.
-- Broad key patterns such as `*` are rejected.
-- Large collection reads are limited.
-- Control characters and oversized keys/fields are rejected.
+- `del(keys)` is registered so clients can see the safety policy, but deletion is disabled by default and always rejected.
+- Broad key patterns such as `*`, leading wildcards, and very short wildcard prefixes are rejected; use namespaced patterns such as `demo:*`.
+- `keys(pattern)` returns at most 100 keys.
+- `hgetall`, `lrange`, and `smembers` read at most 100 collection items.
+- `set(key, value, ttl?)` accepts TTL values from 1 second to 30 days.
+- `info(section)` requires one of `server`, `clients`, `memory`, `stats`, `keyspace`, or `cpu`.
+- Control characters and oversized keys/fields are rejected; keys, fields, and patterns are limited to 512 characters.

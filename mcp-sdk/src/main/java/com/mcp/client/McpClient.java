@@ -38,7 +38,7 @@ public interface McpClient {
      * {@link #initialize(InitializeRequest)} 完成协议握手。
      * </p>
      *
-     * @param transport 传输层实现（如 Stdio、SSE、WebSocket 等）
+     * @param transport 传输层实现（如 Stdio、SSE）
      * @throws Exception 连接过程中可能抛出的异常
      */
     void connect(Transport transport) throws Exception;

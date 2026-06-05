@@ -73,13 +73,13 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
 
 ### 工具
 
-- `query`
-- `execute`
-- `list_databases`
-- `list_tables`
-- `describe_table`
-- `explain_query`
-- `get_table_status`
+- `query(sql)`
+- `execute(sql)`
+- `list_databases()`
+- `list_tables(database?)`
+- `describe_table(table, database?)`
+- `explain_query(sql)`
+- `get_table_status(database?)`
 
 ### 安全说明
 
@@ -127,20 +127,21 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 
 ### 工具
 
-- `get`
-- `set`
-- `hget`
-- `hset`
-- `hgetall`
-- `keys`
-- `type`
-- `ttl`
-- `lrange`
-- `llen`
-- `scard`
-- `smembers`
-- `info`
-- `dbsize`
+- `get(key)`
+- `set(key, value, ttl?)`
+- `del(keys)` 默认禁用
+- `keys(pattern)`
+- `type(key)`
+- `ttl(key)`
+- `hget(key, field)`
+- `hset(key, field, value)`
+- `hgetall(key)`
+- `lrange(key, start, stop)`
+- `llen(key)`
+- `scard(key)`
+- `smembers(key)`
+- `info(section)`
+- `dbsize()`
 
 ### 安全说明
 

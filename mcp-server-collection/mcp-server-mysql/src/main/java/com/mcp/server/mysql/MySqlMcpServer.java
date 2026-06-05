@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * 提供以下 MCP 工具：
  * <ul>
  *   <li><b>query</b> - 执行 SELECT 查询并返回结果集</li>
- *   <li><b>execute</b> - 执行 INSERT/UPDATE/DELETE 等写操作</li>
+ *   <li><b>execute</b> - 执行安全的 INSERT/UPDATE 写操作</li>
  *   <li><b>list_databases</b> - 列出所有数据库</li>
  *   <li><b>list_tables</b> - 列出指定数据库中的所有表</li>
  *   <li><b>describe_table</b> - 查看表结构</li>
@@ -32,8 +32,8 @@ import java.util.regex.Pattern;
  * </ul>
  * </p>
  * <p>
- * 安全特性：内置危险 SQL 检测机制，自动拦截 DROP、DELETE、TRUNCATE、ALTER、
- * CREATE、GRANT、REVOKE 等可能造成数据损失的操作。
+ * 安全特性：内置危险 SQL 检测机制，自动拦截 DELETE、DROP、TRUNCATE、ALTER、
+ * CREATE、GRANT、REVOKE、LOAD、CALL、多语句 SQL 和文件导出等可能造成数据损失的操作。
  * </p>
  */
 @McpServer(name = "mysql-server", version = "1.0.0")

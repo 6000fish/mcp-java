@@ -68,13 +68,13 @@ CREATE TABLE IF NOT EXISTS users (
 
 | Tool | Description |
 |---|---|
-| `query` | Execute a read-only `SELECT` query and return rows as JSON |
-| `execute` | Execute a safe `INSERT` or `UPDATE` statement |
-| `list_databases` | List visible databases |
-| `list_tables` | List tables in the current or specified database |
-| `describe_table` | Describe table columns and types |
-| `explain_query` | Return the MySQL `EXPLAIN` plan for a `SELECT` query |
-| `get_table_status` | Return table status metadata |
+| `query(sql)` | Execute a read-only `SELECT` query and return rows as JSON |
+| `execute(sql)` | Execute a safe `INSERT` or `UPDATE` statement |
+| `list_databases()` | List visible databases |
+| `list_tables(database?)` | List tables in the current or specified database |
+| `describe_table(table, database?)` | Describe table columns and types |
+| `explain_query(sql)` | Return the MySQL `EXPLAIN` plan for a `SELECT` query |
+| `get_table_status(database?)` | Return table status metadata |
 
 ## Example prompts
 
@@ -92,7 +92,8 @@ Query the first 10 rows from users and summarize them.
 
 ## Safety behavior
 
-- Read queries must be a single `SELECT` statement.
-- Write operations are limited to `INSERT` and `UPDATE`.
-- Dangerous operations such as `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, permission changes, and multi-statement SQL are rejected.
+- Read queries must be a single `SELECT` statement; trailing semicolons are accepted, but multi-statement SQL is rejected.
+- Write operations are limited to a single `INSERT` or `UPDATE` statement.
+- Dangerous operations such as `DELETE`, `DROP`, `ALTER`, `CREATE`, `TRUNCATE`, permission changes, `LOAD`, stored procedure calls, `OUTFILE`, `DUMPFILE`, and `LOAD_FILE` are rejected.
+- Database and table names must be simple identifiers such as `users` or `mcp_demo`; they are validated and quoted before use.
 - Use a database account with least privileges for production-like environments.

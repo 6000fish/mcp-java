@@ -14,7 +14,7 @@
 
 - 🚀 **Easy to Use** - Simple API for building MCP servers
 - 🔌 **Multiple Transports** - Stdio and SSE support
-- 🛠️ **Annotation-Driven** - Use annotations to define tools
+- 🛠️ **Annotation-Driven** - Use annotations to define tools, resources, and prompts
 - 📦 **Spring Boot Integration** - Auto-configuration support
 - 🎯 **Java SDK First** - Build custom MCP servers quickly, with MySQL and Redis runnable examples
 
@@ -197,7 +197,7 @@ Keep real passwords in your local Agent configuration or environment variables o
 public class MyServer {
 
     @McpTool(name = "hello", description = "Say hello")
-    public String hello(@Param("name") String name) {
+    public String hello(@Param(name = "name") String name) {
         return "Hello, " + name + "!";
     }
 }
@@ -207,8 +207,8 @@ public class MyServer {
 
 | Server | Description | Tools |
 |--------|-------------|-------|
-| MySQL | Database operations | query, list_tables, describe_table |
-| Redis | Cache operations | get, set, hget, hgetall, keys |
+| MySQL | Database operations | query, execute, list_databases, list_tables, describe_table, explain_query, get_table_status |
+| Redis | Cache operations | get, set, del, keys, type, ttl, hget, hset, hgetall, lrange, llen, scard, smembers, info, dbsize |
 
 ## Project Structure
 

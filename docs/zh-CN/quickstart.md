@@ -106,6 +106,8 @@ Insert 3 test users into the users table, then query them back.
 - Agent 配置中请使用 jar 的绝对路径。
 - 密码只放在本地 Agent 配置或环境变量中。
 - stdio 模式下 stdout 保留给 MCP JSON-RPC 协议消息，服务日志会写入 stderr。
+- Redis `keys` 使用 `demo:*` 这类窄命名空间模式，拒绝 `*` 等宽泛 pattern。
+- MySQL `execute` 只接受 `INSERT` 和 `UPDATE`，拒绝破坏性 SQL。
 
 ## 下一步
 

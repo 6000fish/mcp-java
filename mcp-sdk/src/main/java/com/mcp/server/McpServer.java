@@ -94,7 +94,7 @@ public interface McpServer {
      * 绑定传输层并开始监听客户端请求。服务器会注册消息、错误和关闭的回调处理。
      * </p>
      *
-     * @param transport 传输层实现（如 Stdio、SSE、WebSocket 等）
+     * @param transport 传输层实现（如 Stdio、SSE）
      * @throws Exception 启动过程中可能抛出的异常
      */
     void start(Transport transport) throws Exception;

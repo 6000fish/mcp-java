@@ -68,13 +68,13 @@ CREATE TABLE IF NOT EXISTS users (
 
 | 工具 | 说明 |
 |---|---|
-| `query` | 执行只读 `SELECT` 查询，并以 JSON 返回数据行 |
-| `execute` | 执行安全的 `INSERT` 或 `UPDATE` 语句 |
-| `list_databases` | 列出可见数据库 |
-| `list_tables` | 列出当前或指定数据库中的表 |
-| `describe_table` | 查看表字段和类型 |
-| `explain_query` | 返回 `SELECT` 查询的 MySQL `EXPLAIN` 执行计划 |
-| `get_table_status` | 返回表状态元数据 |
+| `query(sql)` | 执行只读 `SELECT` 查询，并以 JSON 返回数据行 |
+| `execute(sql)` | 执行安全的 `INSERT` 或 `UPDATE` 语句 |
+| `list_databases()` | 列出可见数据库 |
+| `list_tables(database?)` | 列出当前或指定数据库中的表 |
+| `describe_table(table, database?)` | 查看表字段和类型 |
+| `explain_query(sql)` | 返回 `SELECT` 查询的 MySQL `EXPLAIN` 执行计划 |
+| `get_table_status(database?)` | 返回表状态元数据 |
 
 ## 示例 Prompt
 
@@ -92,7 +92,8 @@ Query the first 10 rows from users and summarize them.
 
 ## 安全行为
 
-- 读查询必须是单条 `SELECT` 语句。
-- 写操作仅允许 `INSERT` 和 `UPDATE`。
-- 拒绝 `DELETE`、`DROP`、`ALTER`、`TRUNCATE`、权限变更和多语句 SQL 等危险操作。
+- 读查询必须是单条 `SELECT` 语句；允许末尾分号，但拒绝多语句 SQL。
+- 写操作仅允许单条 `INSERT` 或 `UPDATE` 语句。
+- 拒绝 `DELETE`、`DROP`、`ALTER`、`CREATE`、`TRUNCATE`、权限变更、`LOAD`、存储过程调用、`OUTFILE`、`DUMPFILE` 和 `LOAD_FILE` 等危险操作。
+- 数据库名和表名必须是 `users` 或 `mcp_demo` 这类简单标识符；服务会校验并加反引号后再使用。
 - 在类生产环境中建议使用最小权限数据库账号。

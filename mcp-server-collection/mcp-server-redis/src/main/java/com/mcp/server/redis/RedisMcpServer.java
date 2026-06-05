@@ -25,7 +25,7 @@ import java.util.*;
  * <ul>
  *   <li><b>get</b> - 获取指定键的值</li>
  *   <li><b>set</b> - 设置键值对，支持可选的过期时间</li>
- *   <li><b>del</b> - 删除一个或多个键</li>
+ *   <li><b>del</b> - 默认安全策略下禁用删除操作</li>
  *   <li><b>keys</b> - 按模式匹配查找键</li>
  *   <li><b>type</b> - 获取键存储的数据类型</li>
  *   <li><b>ttl</b> - 获取键的剩余生存时间</li>

@@ -14,7 +14,7 @@
 
 - 🚀 **简单易用** - 简洁的 API，快速构建 MCP 服务
 - 🔌 **多传输方式** - 支持 Stdio 和 SSE
-- 🛠️ **注解驱动** - 使用注解定义工具
+- 🛠️ **注解驱动** - 使用注解定义工具、资源和 Prompt
 - 📦 **Spring Boot 集成** - 自动配置支持
 - 🎯 **SDK 优先** - 快速构建自定义 MCP Server，并提供 MySQL、Redis 可运行示例
 
@@ -197,7 +197,7 @@ Redis 服务示例：
 public class MyServer {
 
     @McpTool(name = "hello", description = "问候")
-    public String hello(@Param("name") String name) {
+    public String hello(@Param(name = "name") String name) {
         return "你好, " + name + "!";
     }
 }
@@ -207,8 +207,8 @@ public class MyServer {
 
 | 服务 | 说明 | 工具 |
 |------|------|------|
-| MySQL | 数据库操作 | query, list_tables, describe_table |
-| Redis | 缓存操作 | get, set, hget, hgetall, keys |
+| MySQL | 数据库操作 | query, execute, list_databases, list_tables, describe_table, explain_query, get_table_status |
+| Redis | 缓存操作 | get, set, del, keys, type, ttl, hget, hset, hgetall, lrange, llen, scard, smembers, info, dbsize |
 
 ## 项目结构
 

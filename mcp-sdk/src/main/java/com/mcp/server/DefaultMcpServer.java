@@ -61,7 +61,7 @@ public class DefaultMcpServer implements McpServer {
     /** 已注册的 Prompt 模板映射表，key 为 Prompt 名称，value 为 Prompt 条目（包含名称、描述和处理器） */
     private final Map<String, PromptEntry> prompts = new ConcurrentHashMap<>();
 
-    /** 传输层实例，负责底层通信（如 Stdio、SSE、WebSocket 等） */
+    /** 传输层实例，负责底层通信（如 Stdio、SSE） */
     private Transport transport;
 
     /** 请求 ID 计数器，用于生成唯一的 JSON-RPC 请求标识 */

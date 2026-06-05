@@ -52,20 +52,21 @@ mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar
 
 | 工具 | 说明 |
 |---|---|
-| `get` | 获取字符串键的值 |
-| `set` | 设置字符串键值，可选 TTL |
-| `hget` | 读取一个 hash 字段 |
-| `hset` | 写入一个 hash 字段 |
-| `hgetall` | 以 JSON 读取小型 hash |
-| `keys` | 使用窄命名空间模式查找最多 100 个键 |
-| `type` | 返回 key 中存储的数据类型 |
-| `ttl` | 返回 key 的 TTL 信息 |
-| `lrange` | 读取有边界的 Redis list 范围 |
-| `llen` | 统计 Redis list 元素数量 |
-| `scard` | 统计 Redis set 成员数量 |
-| `smembers` | 读取小型 Redis set |
-| `info` | 读取安全的 Redis INFO section |
-| `dbsize` | 统计当前 Redis 数据库中的 key 数量 |
+| `get(key)` | 获取字符串键的值 |
+| `set(key, value, ttl?)` | 设置字符串键值，可选 TTL |
+| `del(keys)` | 已注册，但默认安全策略下禁用 |
+| `keys(pattern)` | 使用窄命名空间模式查找最多 100 个键 |
+| `type(key)` | 返回 key 中存储的数据类型 |
+| `ttl(key)` | 返回 key 的 TTL 信息 |
+| `hget(key, field)` | 读取一个 hash 字段 |
+| `hset(key, field, value)` | 写入一个 hash 字段 |
+| `hgetall(key)` | 以 JSON 读取小型 hash |
+| `lrange(key, start, stop)` | 读取有边界的 Redis list 范围 |
+| `llen(key)` | 统计 Redis list 元素数量 |
+| `scard(key)` | 统计 Redis set 成员数量 |
+| `smembers(key)` | 读取小型 Redis set |
+| `info(section)` | 读取安全的 Redis INFO section |
+| `dbsize()` | 统计当前 Redis 数据库中的 key 数量 |
 
 ## 示例 Prompt
 
@@ -83,7 +84,10 @@ Find keys under the demo:* namespace.
 
 ## 安全行为
 
-- 默认禁用 `del`，避免误删数据。
-- 拒绝 `*` 等宽泛 key pattern。
-- 限制大集合读取。
-- 拒绝控制字符和超长 key/field。
+- `del(keys)` 会注册给客户端看到安全策略，但默认禁用并始终拒绝删除操作。
+- 拒绝 `*`、前置通配符和过短通配符前缀等宽泛 key pattern；建议使用 `demo:*` 这类命名空间模式。
+- `keys(pattern)` 最多返回 100 个 key。
+- `hgetall`、`lrange` 和 `smembers` 最多读取 100 个集合元素。
+- `set(key, value, ttl?)` 接受 1 秒到 30 天之间的 TTL。
+- `info(section)` 必须指定 `server`、`clients`、`memory`、`stats`、`keyspace` 或 `cpu`。
+- 拒绝控制字符和超长 key/field；key、field 和 pattern 限制为 512 字符。

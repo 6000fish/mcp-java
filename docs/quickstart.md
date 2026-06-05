@@ -106,6 +106,8 @@ Expected result: the Agent calls MySQL tools and returns the inserted rows.
 - Use absolute jar paths in Agent configuration.
 - Keep passwords in local Agent configuration or environment variables only.
 - In stdio mode, stdout is reserved for MCP JSON-RPC messages; server logs are written to stderr.
+- Redis `keys` uses narrow namespaced patterns such as `demo:*`; broad patterns like `*` are rejected.
+- MySQL `execute` only accepts `INSERT` and `UPDATE`; destructive SQL is rejected.
 
 ## Next steps
 
