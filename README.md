@@ -24,7 +24,7 @@
 
 ```xml
 <dependency>
-    <groupId>com.mcp</groupId>
+    <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-sdk</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -185,7 +185,7 @@ Keep real passwords in your local Agent configuration or environment variables o
 
 ```xml
 <dependency>
-    <groupId>com.mcp</groupId>
+    <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-spring-boot-starter</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -231,11 +231,11 @@ mvn clean install
 
 ## Publishing
 
-Before publishing to Maven Central, make sure the `com.mcp` namespace is verified in your Central/Sonatype account. The first public release version is `0.1.0`.
+Before publishing to Maven Central, make sure the `io.github.6000fish` namespace is verified in your Central/Sonatype account. The first public release version is `0.1.0`.
 
-Configure your local `~/.m2/settings.xml` with the `ossrh` server credentials and a local GPG signing key. Never commit Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
+Configure your local `~/.m2/settings.xml` with the `central` server credentials generated from a Central Portal token and a local GPG signing key. Never commit Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
 
-Release build command for the first public Maven Central scope:
+Release command for the first public Maven Central scope:
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis

@@ -24,7 +24,7 @@
 
 ```xml
 <dependency>
-    <groupId>com.mcp</groupId>
+    <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-sdk</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -185,7 +185,7 @@ Redis 服务示例：
 
 ```xml
 <dependency>
-    <groupId>com.mcp</groupId>
+    <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-spring-boot-starter</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -231,11 +231,11 @@ mvn clean install
 
 ## 发布准备
 
-发布到 Maven Central 前，先确认你的 Central/Sonatype 账号已经完成 `com.mcp` namespace 校验。首个公开发布版本为 `0.1.0`。
+发布到 Maven Central 前，先确认你的 Central/Sonatype 账号已经完成 `io.github.6000fish` namespace 校验。首个公开发布版本为 `0.1.0`。
 
-在本地 `~/.m2/settings.xml` 配置 `ossrh` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
+在本地 `~/.m2/settings.xml` 配置从 Central Portal token 生成的 `central` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 
-首个公开版本的 Maven Central 发布构建命令：
+首个公开版本的 Maven Central 发布命令：
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis

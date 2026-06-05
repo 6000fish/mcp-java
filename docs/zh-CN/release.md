@@ -8,13 +8,13 @@
 
 Maven Central 首发产物：
 
-- `com.mcp:mcp-java:0.1.0` parent POM
-- `com.mcp:mcp-sdk:0.1.0`
-- `com.mcp:mcp-spring-boot-starter:0.1.0`
-- `com.mcp:mcp-server-collection:0.1.0` parent POM
-- `com.mcp:mcp-server-common:0.1.0`
-- `com.mcp:mcp-server-mysql:0.1.0`
-- `com.mcp:mcp-server-redis:0.1.0`
+- `io.github.6000fish:mcp-java:0.1.0` parent POM
+- `io.github.6000fish:mcp-sdk:0.1.0`
+- `io.github.6000fish:mcp-spring-boot-starter:0.1.0`
+- `io.github.6000fish:mcp-server-collection:0.1.0` parent POM
+- `io.github.6000fish:mcp-server-common:0.1.0`
+- `io.github.6000fish:mcp-server-mysql:0.1.0`
+- `io.github.6000fish:mcp-server-redis:0.1.0`
 
 可执行 Server 分发重点：
 
@@ -25,11 +25,10 @@ Maven Central 首发产物：
 
 ## Maven Central 前置条件
 
-1. Central/Sonatype 账号已完成 `com.mcp` namespace 校验。
-2. 本地 `~/.m2/settings.xml` 配置从 Central Portal token 生成的 `ossrh` server 凭据。
-3. deploy endpoint 使用 Sonatype Central 的 OSSRH Staging API 兼容服务。
-4. 本地 GPG key 可用于签名。
-5. 不把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
+1. Central/Sonatype 账号已完成 `io.github.6000fish` namespace 校验。
+2. 本地 `~/.m2/settings.xml` 配置从 Central Portal token 生成的 `central` server 凭据。
+3. 本地 GPG key 可用于签名。
+4. 不把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 
 ## 本地验证
 
@@ -45,7 +44,7 @@ mvn -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-colle
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
-执行 deploy 或上传 GitHub Release 资产前，需要单独确认。
+该命令会以 `autoPublish=false` 上传 Central Portal deployment；请先在 Central Portal 检查 deployment，再手动发布。
 
 ## GitHub Release 资产
 
