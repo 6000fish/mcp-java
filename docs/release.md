@@ -26,9 +26,10 @@ Other server modules skip Maven deploy for now to avoid publishing less-polished
 ## Maven Central prerequisites
 
 1. The `com.mcp` namespace is verified in your Central/Sonatype account.
-2. Local `~/.m2/settings.xml` contains the `ossrh` server credentials.
-3. A local GPG key is available for signing.
-4. Maven Central credentials, GPG passphrases, private keys, and `settings.xml` are not committed to Git.
+2. Local `~/.m2/settings.xml` contains the `ossrh` server credentials generated from Central Portal tokens.
+3. The deploy endpoint uses Sonatype Central's OSSRH Staging API compatibility service.
+4. A local GPG key is available for signing.
+5. Maven Central credentials, GPG passphrases, private keys, and `settings.xml` are not committed to Git.
 
 ## Local verification
 

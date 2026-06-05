@@ -26,9 +26,10 @@ Maven Central 首发产物：
 ## Maven Central 前置条件
 
 1. Central/Sonatype 账号已完成 `com.mcp` namespace 校验。
-2. 本地 `~/.m2/settings.xml` 配置 `ossrh` server 凭据。
-3. 本地 GPG key 可用于签名。
-4. 不把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
+2. 本地 `~/.m2/settings.xml` 配置从 Central Portal token 生成的 `ossrh` server 凭据。
+3. deploy endpoint 使用 Sonatype Central 的 OSSRH Staging API 兼容服务。
+4. 本地 GPG key 可用于签名。
+5. 不把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 
 ## 本地验证
 
