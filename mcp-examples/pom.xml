@@ -21,6 +21,7 @@
 
     <modules>
         <module>quick-start</module>
+        <module>custom-server-template</module>
         <module>business-server-example</module>
         <module>spring-boot-example</module>
         <module>client-example</module>

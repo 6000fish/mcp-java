@@ -2,19 +2,38 @@
 
 [中文](zh-CN/troubleshooting.md) | English
 
-## Agent cannot find the MCP server
+## First-run checklist
+
+Before debugging client behavior, verify the local basics:
+
+```bash
+java -version
+mvn -version
+mvn package -pl mcp-examples/quick-start -am -DskipTests
+```
+
+Confirm the configured jar exists, then restart the Agent after changing MCP configuration.
+
+## Agent cannot find the MCP server or tools
 
 Check that the Agent configuration uses an absolute jar path:
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"]
 ```
 
 Rebuild the jar if it does not exist:
 
 ```bash
-mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
+mvn package -pl mcp-examples/quick-start -am -DskipTests
 ```
+
+If the server appears but no tools are listed, check that:
+
+- the path points to the latest rebuilt jar
+- the config includes `"type": "stdio"`
+- the Agent was restarted after editing config
+- no server code writes logs to stdout
 
 ## Java command is not found
 
@@ -84,7 +103,13 @@ The built-in MySQL and Redis stdio servers are tested for these compatibility po
 - stdio responses omit null fields
 - logs are written to stderr
 
-## Logs appear in Agent output
+## Server starts and waits with no output
+
+This can be normal for stdio MCP servers. They wait for JSON-RPC messages from the Agent on stdin. Logs should appear on stderr only.
+
+If you run a stdio server manually with `java -jar ...`, do not expect a web page or command prompt response.
+
+## Logs appear in Agent output or JSON-RPC parse errors
 
 In stdio mode, stdout must contain only MCP JSON-RPC messages. Use stderr for logs.
 
@@ -111,6 +136,16 @@ Query the first 10 rows from users.
 ```text
 Find Redis keys under demo:* only.
 ```
+
+## Maven Central dependency is not found
+
+Confirm the dependency coordinates use the published namespace:
+
+```xml
+<groupId>io.github.6000fish</groupId>
+```
+
+Maven Central search indexing can lag behind artifact availability. If the artifact is visible in Central Portal but not in search, wait and retry with a clean local Maven cache for that artifact.
 
 ## Maven build shows shade warnings
 

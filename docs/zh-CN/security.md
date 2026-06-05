@@ -4,6 +4,16 @@
 
 本项目面向本地、用户授权的 MCP 访问场景，用于连接开发者可控的服务。
 
+## 连接 Agent 到数据前
+
+在把 Redis、MySQL 或你自己的工具连接到真实数据前，先检查：
+
+- 先使用本地或一次性测试数据
+- 使用最小权限凭据
+- 首次运行避免连接生产数据
+- 凭据只放在本地 Agent 配置或环境变量中
+- 使用高权限账号前先审查生成的 SQL 或工具动作
+
 ## 敏感信息
 
 - 不要提交数据库密码、Redis 密码、API Key、Maven Central 凭据、GPG passphrase、私钥或 `settings.xml`。
@@ -46,6 +56,16 @@ Redis Server 限制高风险访问模式：
 - 使用专用 Redis 数据库或命名空间前缀
 - 未经评审不要让 Agent 访问共享生产 key
 - Prompt 中优先指定命名空间，例如 `demo:*` 或 `cache:profile:*`
+
+## 自定义 Server 模板安全
+
+向 `mcp-examples/custom-server-template` 或你自己的 Server 添加工具时：
+
+- 在系统边界校验工具输入
+- 除非命令和参数被严格约束，否则避免在工具处理器中执行 shell 命令
+- 不要记录密钥或完整凭据
+- stdio Server 保持 stdout 只输出协议消息
+- 工具描述尽量窄且明确，方便 Agent 正确选择工具
 
 ## Agent 使用
 

@@ -30,6 +30,7 @@ This project treats the following areas as security-sensitive:
 - database safety controls for MySQL tools
 - cache safety controls for Redis tools
 - credential handling in docs, examples, and tests
+- custom MCP server tools that access files, shells, databases, networks, or other external systems
 - request parsing compatibility without unsafe command execution
 
 ## Disclosure
@@ -66,6 +67,7 @@ We will try to acknowledge valid reports promptly, investigate impact, and publi
 - MySQL 工具的数据库安全控制
 - Redis 工具的缓存安全控制
 - 文档、示例和测试中的凭据处理
+- 自定义 MCP Server 工具访问文件、shell、数据库、网络或其他外部系统时的安全边界
 - 请求解析兼容性，且不引入不安全命令执行
 
 ## 披露

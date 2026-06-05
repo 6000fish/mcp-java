@@ -21,7 +21,7 @@ Java toolkit for building custom MCP Servers, with ready-to-use MySQL and Redis 
 
 ## Long description
 
-MCP Java SDK provides a Java implementation of the Model Context Protocol with stdio transport, annotation-driven tool registration, and Spring Boot integration for quickly building custom MCP Servers. The first ready-to-use server release focuses on MySQL and Redis so developers can connect Agents to local or self-hosted data services in minutes.
+MCP Java SDK provides a Java implementation of the Model Context Protocol with stdio transport, annotation-driven tool registration, Spring Boot integration, and a copyable custom server template for quickly building custom MCP Servers. The first ready-to-use server release focuses on MySQL and Redis so developers can connect Agents to local or self-hosted data services in minutes.
 
 The MySQL server supports database discovery, table inspection, read-only SELECT queries, safe INSERT/UPDATE operations, EXPLAIN, and table status. The Redis server supports common key/value, hash, list, set, metadata, and diagnostic operations with guardrails for broad scans and destructive commands.
 
@@ -158,7 +158,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 
 ## Submission checklist
 
-- [x] Confirm repository README links to Quick Start and server docs.
+- [x] Confirm repository README links to Quick Start, custom server template, and server docs.
 - [x] Confirm release artifacts are available from GitHub Releases.
 - [x] Confirm example Agent configs use absolute jar paths and `"type": "stdio"`.
 - [x] Confirm secrets are documented as local-only config.

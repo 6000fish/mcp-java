@@ -2,19 +2,38 @@
 
 中文 | [English](../troubleshooting.md)
 
-## Agent 找不到 MCP Server
+## 首次运行检查清单
+
+排查客户端行为前，先确认本地基础环境：
+
+```bash
+java -version
+mvn -version
+mvn package -pl mcp-examples/quick-start -am -DskipTests
+```
+
+确认配置中的 jar 文件存在；修改 MCP 配置后需要重启 Agent。
+
+## Agent 找不到 MCP Server 或工具
 
 确认 Agent 配置使用的是 jar 绝对路径：
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"]
 ```
 
 如果 jar 不存在，重新构建：
 
 ```bash
-mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
+mvn package -pl mcp-examples/quick-start -am -DskipTests
 ```
+
+如果 Server 能看到但没有 tools，检查：
+
+- 路径是否指向最新重新构建的 jar
+- 配置是否包含 `"type": "stdio"`
+- 修改配置后是否重启了 Agent
+- Server 代码是否把日志写到了 stdout
 
 ## 找不到 java 命令
 
@@ -84,7 +103,13 @@ mysql -h localhost -P 3306 -u root -p
 - stdio 响应省略 null 字段
 - 日志写入 stderr
 
-## 日志出现在 Agent 输出里
+## Server 启动后没有输出并等待
+
+这对 stdio MCP Server 来说可能是正常现象。它们会在 stdin 上等待 Agent 发送 JSON-RPC 消息，日志只应该出现在 stderr。
+
+如果你手动运行 `java -jar ...`，不要期待看到网页或命令行响应。
+
+## 日志出现在 Agent 输出里或 JSON-RPC 解析错误
 
 stdio 模式下 stdout 必须只包含 MCP JSON-RPC 消息，日志应写入 stderr。
 
@@ -111,6 +136,16 @@ Query the first 10 rows from users.
 ```text
 Find Redis keys under demo:* only.
 ```
+
+## Maven Central 依赖找不到
+
+确认依赖坐标使用已发布 namespace：
+
+```xml
+<groupId>io.github.6000fish</groupId>
+```
+
+Maven Central 搜索索引可能会比 artifact 可用时间稍慢。如果 Central Portal 已能看到 artifact，但搜索还没有，等待一段时间后重试，必要时清理本地 Maven 中对应 artifact 的缓存。
 
 ## Maven 构建出现 shade 警告
 
