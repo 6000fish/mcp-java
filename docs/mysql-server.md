@@ -38,7 +38,7 @@ Environment variables:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",

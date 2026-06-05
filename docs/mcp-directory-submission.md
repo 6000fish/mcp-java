@@ -17,11 +17,11 @@ Use this material when submitting the MySQL and Redis MCP Servers to MCP directo
 
 ## Short description
 
-Java SDK and ready-to-use MCP Servers for connecting AI Agents to MySQL and Redis over the Model Context Protocol.
+Java toolkit for building custom MCP Servers, with ready-to-use MySQL and Redis servers for connecting AI Agents to databases and caches over the Model Context Protocol.
 
 ## Long description
 
-MCP Java SDK provides a Java implementation of the Model Context Protocol with stdio transport, annotation-driven tool registration, Spring Boot integration, and production-oriented ready-to-use MCP Servers. The first server release focuses on MySQL and Redis so developers can connect Agents to local or self-hosted data services in minutes.
+MCP Java SDK provides a Java implementation of the Model Context Protocol with stdio transport, annotation-driven tool registration, and Spring Boot integration for quickly building custom MCP Servers. The first ready-to-use server release focuses on MySQL and Redis so developers can connect Agents to local or self-hosted data services in minutes.
 
 The MySQL server supports database discovery, table inspection, read-only SELECT queries, safe INSERT/UPDATE operations, EXPLAIN, and table status. The Redis server supports common key/value, hash, list, set, metadata, and diagnostic operations with guardrails for broad scans and destructive commands.
 
@@ -57,7 +57,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -113,7 +113,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -157,11 +157,11 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 
 ## Submission checklist
 
-- [ ] Confirm repository README links to Quick Start and server docs.
-- [ ] Confirm release artifacts are available from GitHub Releases.
-- [ ] Confirm example Agent configs use absolute jar paths and `"type": "stdio"`.
-- [ ] Confirm secrets are documented as local-only config.
-- [ ] Confirm Claude Code and Codex compatibility notes are included.
+- [x] Confirm repository README links to Quick Start and server docs.
+- [x] Confirm release artifacts are available from GitHub Releases.
+- [x] Confirm example Agent configs use absolute jar paths and `"type": "stdio"`.
+- [x] Confirm secrets are documented as local-only config.
+- [x] Confirm Claude Code and Codex compatibility notes are included.
 - [ ] Submit MySQL server listing.
 - [ ] Submit Redis server listing.
 - [ ] Add badges or directory links back to README after approval.

@@ -17,11 +17,11 @@
 
 ## 简短描述
 
-Java SDK 和开箱即用 MCP Server，用于通过 Model Context Protocol 将 AI Agent 连接到 MySQL 和 Redis。
+面向 Java 开发者的自定义 MCP Server 开发工具包，并提供开箱即用的 MySQL 和 Redis Server，用于通过 Model Context Protocol 将 AI Agent 连接到数据库和缓存。
 
 ## 详细描述
 
-MCP Java SDK 提供 Model Context Protocol 的 Java 实现，支持 stdio 传输、注解驱动工具注册、Spring Boot 集成，以及面向生产使用的开箱即用 MCP Server。首个 Server 发布版本聚焦 MySQL 和 Redis，帮助开发者在几分钟内将 Agent 连接到本地或自托管的数据服务。
+MCP Java SDK 提供 Model Context Protocol 的 Java 实现，支持 stdio 传输、注解驱动工具注册和 Spring Boot 集成，用于快速构建自定义 MCP Server。首个开箱即用 Server 发布版本聚焦 MySQL 和 Redis，帮助开发者在几分钟内将 Agent 连接到本地或自托管的数据服务。
 
 MySQL Server 支持数据库发现、表结构查看、只读 SELECT 查询、安全 INSERT/UPDATE 操作、EXPLAIN 和表状态信息。Redis Server 支持常见 key/value、hash、list、set、元数据和诊断操作，并对宽泛扫描和破坏性命令提供安全限制。
 
@@ -57,7 +57,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -113,7 +113,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -157,11 +157,11 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 
 ## 提交检查清单
 
-- [ ] 确认仓库 README 已链接 Quick Start 和 Server 文档。
-- [ ] 确认 GitHub Releases 中已有发布产物。
-- [ ] 确认示例 Agent 配置使用绝对 jar 路径和 `"type": "stdio"`。
-- [ ] 确认敏感信息说明为仅本地配置。
-- [ ] 确认已包含 Claude Code 和 Codex 兼容性说明。
+- [x] 确认仓库 README 已链接 Quick Start 和 Server 文档。
+- [x] 确认 GitHub Releases 中已有发布产物。
+- [x] 确认示例 Agent 配置使用绝对 jar 路径和 `"type": "stdio"`。
+- [x] 确认敏感信息说明为仅本地配置。
+- [x] 确认已包含 Claude Code 和 Codex 兼容性说明。
 - [ ] 提交 MySQL Server 条目。
 - [ ] 提交 Redis Server 条目。
 - [ ] 审核通过后，将目录徽章或链接补回 README。

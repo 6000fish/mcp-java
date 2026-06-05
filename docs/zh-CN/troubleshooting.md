@@ -7,7 +7,7 @@
 确认 Agent 配置使用的是 jar 绝对路径：
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-server-redis-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"]
 ```
 
 如果 jar 不存在，重新构建：

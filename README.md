@@ -16,7 +16,7 @@
 - 🔌 **Multiple Transports** - Stdio and SSE support
 - 🛠️ **Annotation-Driven** - Use annotations to define tools
 - 📦 **Spring Boot Integration** - Auto-configuration support
-- 🎯 **Ready-to-Use Servers** - MySQL, Redis, Filesystem servers included
+- 🎯 **Java SDK First** - Build custom MCP servers quickly, with MySQL and Redis runnable examples
 
 ## Quick Start
 
@@ -143,7 +143,7 @@ MySQL server example:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -167,7 +167,7 @@ Redis server example:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -209,7 +209,6 @@ public class MyServer {
 |--------|-------------|-------|
 | MySQL | Database operations | query, list_tables, describe_table |
 | Redis | Cache operations | get, set, hget, hgetall, keys |
-| Filesystem | File operations | read, write, list, search |
 
 ## Project Structure
 
@@ -235,7 +234,7 @@ Before publishing to Maven Central, make sure the `io.github.6000fish` namespace
 
 Configure your local `~/.m2/settings.xml` with the `central` server credentials generated from a Central Portal token and a local GPG signing key. Never commit Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
 
-Release command for the first public Maven Central scope:
+Central Portal upload command for the first public Maven Central scope:
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis

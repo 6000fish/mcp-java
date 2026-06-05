@@ -29,7 +29,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -79,7 +79,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",

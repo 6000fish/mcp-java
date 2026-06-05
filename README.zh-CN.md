@@ -16,7 +16,7 @@
 - 🔌 **多传输方式** - 支持 Stdio 和 SSE
 - 🛠️ **注解驱动** - 使用注解定义工具
 - 📦 **Spring Boot 集成** - 自动配置支持
-- 🎯 **开箱即用** - 内置 MySQL、Redis、文件系统等服务
+- 🎯 **SDK 优先** - 快速构建自定义 MCP Server，并提供 MySQL、Redis 可运行示例
 
 ## 快速开始
 
@@ -143,7 +143,7 @@ MySQL 服务示例：
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -167,7 +167,7 @@ Redis 服务示例：
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -209,7 +209,6 @@ public class MyServer {
 |------|------|------|
 | MySQL | 数据库操作 | query, list_tables, describe_table |
 | Redis | 缓存操作 | get, set, hget, hgetall, keys |
-| Filesystem | 文件操作 | read, write, list, search |
 
 ## 项目结构
 
@@ -235,7 +234,7 @@ mvn clean install
 
 在本地 `~/.m2/settings.xml` 配置从 Central Portal token 生成的 `central` server 凭据，并准备本地 GPG 签名 key。不要把 Maven Central 凭据、GPG passphrase、私钥或 `settings.xml` 提交到 Git。
 
-首个公开版本的 Maven Central 发布命令：
+首个公开版本的 Central Portal 上传命令：
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis

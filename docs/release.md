@@ -36,15 +36,15 @@ Other server modules skip Maven deploy for now to avoid publishing less-polished
 mvn -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis verify -DskipTests
 ```
 
-## Release command
+## Upload to Central Portal
 
-Run this only after the account, signing key, and release scope are confirmed:
+Run this only after the account, signing key, and release scope are confirmed. This uploads the selected modules to a Central Portal deployment; because `autoPublish=false`, it does not publish automatically.
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
-This uploads a Central Portal deployment with `autoPublish=false`; review the deployment in Central Portal before publishing it.
+This uploads a Central Portal deployment with `autoPublish=false`; review it in Central Portal, then manually publish it. After Maven Central sync is complete, create GitHub Release `v0.1.0` and upload the executable server jars.
 
 ## GitHub Release assets
 

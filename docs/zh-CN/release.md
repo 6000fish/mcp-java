@@ -36,15 +36,15 @@ Maven Central 首发产物：
 mvn -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis verify -DskipTests
 ```
 
-## 发布命令
+## 上传到 Central Portal
 
-仅在确认账号、签名和发布范围都无误后执行：
+仅在确认账号、签名和发布范围都无误后执行。该命令会把选定模块上传到 Central Portal deployment；因为 `autoPublish=false`，不会自动发布。
 
 ```bash
 mvn clean deploy -Prelease -DskipTests -pl .,mcp-sdk,mcp-spring-boot-starter,mcp-server-collection,mcp-server-collection/mcp-server-common,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis
 ```
 
-该命令会以 `autoPublish=false` 上传 Central Portal deployment；请先在 Central Portal 检查 deployment，再手动发布。
+该命令会以 `autoPublish=false` 上传 Central Portal deployment；请先在 Central Portal 检查 deployment，再手动发布。Maven Central 同步完成后，创建 GitHub Release `v0.1.0` 并上传可执行 Server jar。
 
 ## GitHub Release 资产
 

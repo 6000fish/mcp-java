@@ -7,7 +7,7 @@
 Check that the Agent configuration uses an absolute jar path:
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-server-redis-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"]
 ```
 
 Rebuild the jar if it does not exist:
