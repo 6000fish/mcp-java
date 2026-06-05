@@ -21,7 +21,7 @@
 
 ## 详细描述
 
-MCP Java SDK 提供 Model Context Protocol 的 Java 实现，支持 stdio 传输、注解驱动工具注册和 Spring Boot 集成，用于快速构建自定义 MCP Server。首个开箱即用 Server 发布版本聚焦 MySQL 和 Redis，帮助开发者在几分钟内将 Agent 连接到本地或自托管的数据服务。
+MCP Java SDK 提供 Model Context Protocol 的 Java 实现，支持 stdio 传输、注解驱动工具注册、Spring Boot 集成和可复制的自定义 Server 模板，用于快速构建自定义 MCP Server。首个开箱即用 Server 发布版本聚焦 MySQL 和 Redis，帮助开发者在几分钟内将 Agent 连接到本地或自托管的数据服务。
 
 MySQL Server 支持数据库发现、表结构查看、只读 SELECT 查询、安全 INSERT/UPDATE 操作、EXPLAIN 和表状态信息。Redis Server 支持常见 key/value、hash、list、set、元数据和诊断操作，并对宽泛扫描和破坏性命令提供安全限制。
 
@@ -158,7 +158,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 
 ## 提交检查清单
 
-- [x] 确认仓库 README 已链接 Quick Start 和 Server 文档。
+- [x] 确认仓库 README 已链接 Quick Start、自定义 Server 模板和 Server 文档。
 - [x] 确认 GitHub Releases 中已有发布产物。
 - [x] 确认示例 Agent 配置使用绝对 jar 路径和 `"type": "stdio"`。
 - [x] 确认敏感信息说明为仅本地配置。

@@ -30,5 +30,8 @@ jobs:
       - name: Run core tests
         run: mvn -B -pl mcp-sdk,mcp-spring-boot-starter,mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis -am test
 
+      - name: Package onboarding examples
+        run: mvn -B -pl mcp-examples/quick-start,mcp-examples/business-server-example,mcp-examples/custom-server-template -am package -DskipTests
+
       - name: Package ready-to-use servers
         run: mvn -B -pl mcp-server-collection/mcp-server-mysql,mcp-server-collection/mcp-server-redis -am package -DskipTests

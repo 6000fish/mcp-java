@@ -4,6 +4,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- Custom MCP Server template for annotation-based stdio server development.
+- SDK-first 5-minute quickstart path without Redis or MySQL prerequisites.
+- README onboarding paths for quick-start, custom template, Spring Boot, MySQL, and Redis.
+
+### Changed
+
+- Improved security, troubleshooting, and release docs for post-0.1.0 onboarding.
+- Extended CI packaging coverage for onboarding example modules.
+
 ## 0.1.0 - First public release
 
 ### Added
@@ -33,6 +46,19 @@ All notable changes to this project will be documented in this file.
 # 中文
 
 本文件记录项目的重要变更。
+
+## Unreleased
+
+### 新增
+
+- 自定义 MCP Server 模板，用于注解式 stdio Server 开发。
+- SDK 优先的 5 分钟快速开始路径，不再要求先准备 Redis 或 MySQL。
+- README 增加 quick-start、自定义模板、Spring Boot、MySQL、Redis 等 onboarding 路径。
+
+### 变更
+
+- 改进安全、故障排查和发布文档，服务首发后的上手体验。
+- 扩展 CI，对 onboarding 示例模块执行打包验证。
 
 ## 0.1.0 - 首个公开版本
 

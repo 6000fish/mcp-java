@@ -4,6 +4,16 @@
 
 This project is designed for local, user-authorized MCP access to developer-controlled services.
 
+## Before connecting an Agent to data
+
+Use this checklist before connecting Redis, MySQL, or your own tools to real data:
+
+- test with local or disposable data first
+- use least-privilege credentials
+- avoid production data on the first run
+- keep credentials in local Agent configuration or environment variables
+- review generated SQL or tool actions before using privileged accounts
+
 ## Secrets
 
 - Do not commit database passwords, Redis passwords, API keys, Maven Central credentials, GPG passphrases, private keys, or `settings.xml`.
@@ -46,6 +56,16 @@ Recommended production posture:
 - use a dedicated Redis database or namespace prefix
 - avoid giving Agents access to shared production keys without review
 - prefer namespaced prompts such as `demo:*` or `cache:profile:*`
+
+## Custom server template safety
+
+When adding tools to `mcp-examples/custom-server-template` or your own server:
+
+- validate tool inputs at the system boundary
+- avoid shelling out from tool handlers unless commands and arguments are tightly constrained
+- do not log secrets or full credentials
+- keep stdout protocol-only for stdio servers
+- prefer narrow, explicit tool descriptions so Agents choose tools correctly
 
 ## Agent usage
 
