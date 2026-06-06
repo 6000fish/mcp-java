@@ -13,7 +13,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
 The executable jar is generated at:
 
 ```text
-mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar
+mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar
 ```
 
 ## Configuration
@@ -38,7 +38,7 @@ Environment variables:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",

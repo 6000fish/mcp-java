@@ -40,7 +40,7 @@ Core SDK:
 <dependency>
     <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-sdk</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 
@@ -50,7 +50,7 @@ Spring Boot starter:
 <dependency>
     <groupId>io.github.6000fish</groupId>
     <artifactId>mcp-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 
@@ -72,7 +72,7 @@ Add the runnable jar to your MCP Agent configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.1.jar"
       ]
     }
   }
@@ -105,7 +105,7 @@ Configure the generated jar:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.1.jar"
       ]
     }
   }
@@ -162,7 +162,7 @@ MySQL server config:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -186,7 +186,7 @@ Redis server config:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.1.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",

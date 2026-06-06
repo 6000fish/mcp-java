@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.1.1 - 2026-06-06
+
 ### Added
 
 - Custom MCP Server template for annotation-based stdio server development.
@@ -48,6 +50,8 @@ All notable changes to this project will be documented in this file.
 本文件记录项目的重要变更。
 
 ## Unreleased
+
+## 0.1.1 - 2026-06-06
 
 ### 新增
 

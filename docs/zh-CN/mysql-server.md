@@ -13,7 +13,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
 可执行 jar 生成位置：
 
 ```text
-mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar
+mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar
 ```
 
 ## 配置
@@ -38,7 +38,7 @@ mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",

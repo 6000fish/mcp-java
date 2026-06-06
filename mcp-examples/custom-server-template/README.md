@@ -24,7 +24,7 @@ mvn package -pl mcp-examples/custom-server-template -am -DskipTests
 The runnable jar is generated at:
 
 ```text
-mcp-examples/custom-server-template/target/custom-server-template-0.1.0.jar
+mcp-examples/custom-server-template/target/custom-server-template-0.1.1.jar
 ```
 
 ## Configure an MCP client
@@ -39,7 +39,7 @@ Use an absolute jar path in your Agent configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.1.jar"
       ]
     }
   }

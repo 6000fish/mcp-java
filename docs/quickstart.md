@@ -31,7 +31,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.1.jar"
       ]
     }
   }
@@ -75,7 +75,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-examples/custom-server-template/target/custom-server-template-0.1.1.jar"
       ]
     }
   }
@@ -110,7 +110,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.1.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
@@ -162,7 +162,7 @@ Add this to your Agent MCP configuration:
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
