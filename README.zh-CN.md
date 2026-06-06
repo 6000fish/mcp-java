@@ -12,6 +12,8 @@
 
 > 用 Java 快速构建自定义 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) Server 的 SDK，并提供 MySQL、Redis 可运行服务示例。
 
+MCP.so 收录：[MySQL MCP Server for Java](https://mcp.so/zh/server/mysql-mcp-server-for-java/6000fish) · [Redis MCP Server for Java](https://mcp.so/zh/server/redis-mcp-server-for-java/6000fish)
+
 ## 为什么用这个项目
 
 - 用一个轻量 SDK 构建自定义 Java MCP Server。

@@ -156,6 +156,69 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - Verified with Codex using the MySQL stdio server, including `tools/list`, `tools/call`, and client `_meta` fields.
 - Tool definitions include `inputSchema`, stdio responses omit null fields, and server logs are written to stderr.
 
+## Platform submission plan
+
+### Glama
+
+Glama's Add Server form currently requires a deployed MCP endpoint URL. Local stdio jar servers such as the MySQL and Redis servers in this repository are not suitable for that form unless Glama provides a separate stdio/local package submission flow.
+
+Do not submit GitHub Release, Maven Central, repository, or localhost URLs as the server URL.
+
+Manual step: skip Glama for now, or revisit it later if a remote MCP endpoint is added.
+
+### PulseMCP
+
+Submit the repository or project page as an MCP server directory entry:
+
+```text
+https://github.com/6000fish/mcp-java
+```
+
+Use the MySQL and Redis listing sections above as the listing descriptions.
+
+Manual step: sign in or use the submit/contact flow provided by PulseMCP.
+
+### MCP.so
+
+Published listings:
+
+- [MySQL MCP Server for Java](https://mcp.so/zh/server/mysql-mcp-server-for-java/6000fish)
+- [Redis MCP Server for Java](https://mcp.so/zh/server/redis-mcp-server-for-java/6000fish)
+
+If updating or resubmitting, use the MCP.so Submit flow or GitHub issue flow if prompted.
+
+Recommended repository URL:
+
+```text
+https://github.com/6000fish/mcp-java
+```
+
+Recommended entries:
+
+- `MySQL MCP Server for Java`
+- `Redis MCP Server for Java`
+
+Manual step: use MCP.so's Submit button or linked GitHub issue template.
+
+### Smithery
+
+Smithery is more installation-focused than a simple directory listing. Start with the repository URL and server descriptions above. If Smithery requires a publishing package or CLI flow, publish after confirming the Java jar stdio install command works with their current requirements.
+
+Manual step: sign in to Smithery and follow its current publish flow. If it requires additional packaging metadata, add that only after confirming the expected schema.
+
+### Awesome MCP Servers
+
+For curated GitHub lists, fork the target repository, add one or two entries to its README, and open a pull request.
+
+Suggested entries:
+
+```markdown
+- [MySQL MCP Server for Java](https://github.com/6000fish/mcp-java) - Stdio MCP server for MySQL with schema discovery, safe SELECT queries, controlled INSERT/UPDATE operations, EXPLAIN plans, and table metadata. Part of MCP Java SDK.
+- [Redis MCP Server for Java](https://github.com/6000fish/mcp-java) - Stdio MCP server for Redis with safe key/value, hash, list, set, metadata, and diagnostic tools. Part of MCP Java SDK.
+```
+
+Manual step: choose the target awesome list, fork it, add the entries under the database/cache section, and submit a PR.
+
 ## Submission checklist
 
 - [x] Confirm repository README links to Quick Start, custom server template, and server docs.
@@ -163,6 +226,6 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - [x] Confirm example Agent configs use absolute jar paths and `"type": "stdio"`.
 - [x] Confirm secrets are documented as local-only config.
 - [x] Confirm Claude Code and Codex compatibility notes are included.
-- [ ] Submit MySQL server listing.
-- [ ] Submit Redis server listing.
-- [ ] Add badges or directory links back to README after approval.
+- [x] Submit MySQL server listing to MCP.so.
+- [x] Submit Redis server listing to MCP.so.
+- [ ] Add additional directory links back to README after approval.

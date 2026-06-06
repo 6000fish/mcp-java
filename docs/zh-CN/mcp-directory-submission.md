@@ -156,6 +156,69 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - 已使用 Codex 验证 MySQL stdio server，包括 `tools/list`、`tools/call` 和客户端 `_meta` 字段。
 - 工具定义包含 `inputSchema`，stdio 响应省略 null 字段，服务日志写入 stderr。
 
+## 平台提交计划
+
+### Glama
+
+Glama 的 Add Server 表单当前要求填写已部署的 MCP endpoint URL。本仓库的 MySQL 和 Redis Server 是本地 stdio jar Server，除非 Glama 提供单独的 stdio/local package 提交流程，否则不适合这个表单。
+
+不要把 GitHub Release、Maven Central、仓库地址或 localhost 地址填到 server URL。
+
+需要手动操作：暂时跳过 Glama，后续如果新增远程 MCP endpoint 再考虑提交。
+
+### PulseMCP
+
+将仓库或项目页提交为 MCP server directory 条目：
+
+```text
+https://github.com/6000fish/mcp-java
+```
+
+描述内容使用上面的 MySQL 和 Redis 条目。
+
+需要手动操作：登录或使用 PulseMCP 提供的 submit/contact 流程。
+
+### MCP.so
+
+已发布条目：
+
+- [MySQL MCP Server for Java](https://mcp.so/zh/server/mysql-mcp-server-for-java/6000fish)
+- [Redis MCP Server for Java](https://mcp.so/zh/server/redis-mcp-server-for-java/6000fish)
+
+如果后续需要更新或重新提交，通过 MCP.so 的 Submit 流程提交；如果页面引导到 GitHub issue，则按 issue 模板提交。
+
+推荐仓库地址：
+
+```text
+https://github.com/6000fish/mcp-java
+```
+
+推荐条目：
+
+- `MySQL MCP Server for Java`
+- `Redis MCP Server for Java`
+
+需要手动操作：使用 MCP.so 的 Submit 按钮或关联 GitHub issue 模板。
+
+### Smithery
+
+Smithery 更偏可安装 MCP Server 发布，不只是简单目录收录。先使用仓库地址和上面的 Server 描述提交。如果 Smithery 要求发布包或 CLI 流程，需要先确认当前 Java jar stdio 安装命令是否满足它的要求。
+
+需要手动操作：登录 Smithery 并按当前 publish 流程操作；如果要求额外 packaging metadata，确认 schema 后再补。
+
+### Awesome MCP Servers
+
+对于 GitHub curated list，先 fork 目标仓库，在 README 中添加一到两个条目，然后提交 PR。
+
+建议条目：
+
+```markdown
+- [MySQL MCP Server for Java](https://github.com/6000fish/mcp-java) - Stdio MCP server for MySQL with schema discovery, safe SELECT queries, controlled INSERT/UPDATE operations, EXPLAIN plans, and table metadata. Part of MCP Java SDK.
+- [Redis MCP Server for Java](https://github.com/6000fish/mcp-java) - Stdio MCP server for Redis with safe key/value, hash, list, set, metadata, and diagnostic tools. Part of MCP Java SDK.
+```
+
+需要手动操作：选择目标 awesome list，fork 后将条目加入 database/cache 分类，然后提交 PR。
+
 ## 提交检查清单
 
 - [x] 确认仓库 README 已链接 Quick Start、自定义 Server 模板和 Server 文档。
@@ -163,6 +226,6 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
 - [x] 确认示例 Agent 配置使用绝对 jar 路径和 `"type": "stdio"`。
 - [x] 确认敏感信息说明为仅本地配置。
 - [x] 确认已包含 Claude Code 和 Codex 兼容性说明。
-- [ ] 提交 MySQL Server 条目。
-- [ ] 提交 Redis Server 条目。
-- [ ] 审核通过后，将目录徽章或链接补回 README。
+- [x] 提交 MySQL Server 条目到 MCP.so。
+- [x] 提交 Redis Server 条目到 MCP.so。
+- [ ] 其他目录审核通过后，将目录徽章或链接补回 README。

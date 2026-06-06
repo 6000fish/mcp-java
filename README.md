@@ -12,6 +12,8 @@
 
 > Java SDK for building custom [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers quickly, with runnable MySQL and Redis server examples.
 
+MCP.so listings: [MySQL MCP Server for Java](https://mcp.so/zh/server/mysql-mcp-server-for-java/6000fish) · [Redis MCP Server for Java](https://mcp.so/zh/server/redis-mcp-server-for-java/6000fish)
+
 ## Why this project
 
 - Build custom MCP servers in Java with a small SDK.
