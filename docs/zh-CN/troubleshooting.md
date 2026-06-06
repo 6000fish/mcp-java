@@ -19,7 +19,7 @@ mvn package -pl mcp-examples/quick-start -am -DskipTests
 确认 Agent 配置使用的是 jar 绝对路径：
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.1.jar"]
 ```
 
 如果 jar 不存在，重新构建：

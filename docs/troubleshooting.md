@@ -19,7 +19,7 @@ Confirm the configured jar exists, then restart the Agent after changing MCP con
 Check that the Agent configuration uses an absolute jar path:
 
 ```json
-"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.0.jar"]
+"args": ["-jar", "/absolute/path/to/mcp-java/mcp-examples/quick-start/target/quick-start-0.1.1.jar"]
 ```
 
 Rebuild the jar if it does not exist:

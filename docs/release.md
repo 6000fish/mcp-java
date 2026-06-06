@@ -4,6 +4,17 @@
 
 This guide records the current release state and the maintainer procedure for future `0.1.x` releases.
 
+## Release candidate: 0.1.1
+
+`v0.1.1` is a polish release candidate focused on first-run onboarding:
+
+- SDK-first README and 5-minute Quick Start.
+- Copyable annotation-based custom MCP Server template.
+- Improved security, troubleshooting, and release documentation.
+- CI packaging coverage for onboarding examples.
+
+Keep the Maven Central release scope the same as `v0.1.0` unless a module is explicitly promoted.
+
 ## Current release: 0.1.0
 
 Maven Central artifacts published for the first public release:

@@ -12,8 +12,8 @@
 - 运行环境：Java 17+
 - 传输方式：stdio
 - 主要产物：
-  - `mcp-server-mysql-0.1.0.jar`
-  - `mcp-server-redis-0.1.0.jar`
+  - `mcp-server-mysql-0.1.1.jar`
+  - `mcp-server-redis-0.1.1.jar`
 
 ## 简短描述
 
@@ -57,7 +57,7 @@ mvn package -pl mcp-server-collection/mcp-server-mysql -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-mysql/target/mcp-server-mysql-0.1.1.jar"
       ],
       "env": {
         "MYSQL_HOST": "localhost",
@@ -113,7 +113,7 @@ mvn package -pl mcp-server-collection/mcp-server-redis -am -DskipTests
       "command": "java",
       "args": [
         "-jar",
-        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.0.jar"
+        "/absolute/path/to/mcp-java/mcp-server-collection/mcp-server-redis/target/mcp-server-redis-0.1.1.jar"
       ],
       "env": {
         "REDIS_HOST": "localhost",
